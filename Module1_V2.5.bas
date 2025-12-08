@@ -475,7 +475,3 @@ Private Sub SafeNudgeActiveCell()
     c.Value = v ' 同値代入（多くのケースで Change は発火しないが、SelectionChange 等の確認用）
     Debug.Print "[Fix_EnableEvents] Nudge @", c.Address(0, 0), " EnableEvents=", Application.EnableEvents
 End Sub
-
-
-
-

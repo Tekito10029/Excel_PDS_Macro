@@ -877,5 +877,3 @@ Public Sub TraceDecorAtRow(ByVal topRow As Long)
     Next rule
     Debug.Print "----------------------------------------"
 End Sub
-
-

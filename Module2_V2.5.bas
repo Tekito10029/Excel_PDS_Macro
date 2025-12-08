@@ -859,5 +859,3 @@ Private Function MapBand6_19_To30_43(ByVal src As Range) As Range
     
     Set MapBand6_19_To30_43 = ws.Range(ws.Cells(r1, c1), ws.Cells(r2, c2))
 End Function
-
-
