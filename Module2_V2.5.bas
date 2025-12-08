@@ -2,52 +2,52 @@ Attribute VB_Name = "Module2"
 'V_2.5
 Option Explicit
 
-' === İ’èi‚±‚±‚ğ•Ï‚¦‚ê‚ÎˆêŠ‡’²®j ===
-Private Const BRACE_WEIGHT_PTS As Single = 5      ' Š‡ŒÊ‚Ìü‚Ì‘¾‚³iptj
-Private Const LABEL_FONT_SIZE As Single = 32      ' ƒ‰ƒxƒ‹‚Ì•¶šƒTƒCƒYiptj
-Private Const BRACE_WIDTH As Single = 12          ' Š‡ŒÊ‚Ì‰¡•
-Private Const LABEL_X_OFFSET As Single = 12       ' Š‡ŒÊ‚©‚çƒ‰ƒxƒ‹‚Ü‚Å‚Ì‰¡‹——£
+' === è¨­å®šï¼ˆã“ã“ã‚’å¤‰ãˆã‚Œã°ä¸€æ‹¬èª¿æ•´ï¼‰ ===
+Private Const BRACE_WEIGHT_PTS As Single = 5      ' æ‹¬å¼§ã®ç·šã®å¤ªã•ï¼ˆptï¼‰
+Private Const LABEL_FONT_SIZE As Single = 32      ' ãƒ©ãƒ™ãƒ«ã®æ–‡å­—ã‚µã‚¤ã‚ºï¼ˆptï¼‰
+Private Const BRACE_WIDTH As Single = 12          ' æ‹¬å¼§ã®æ¨ªå¹…
+Private Const LABEL_X_OFFSET As Single = 12       ' æ‹¬å¼§ã‹ã‚‰ãƒ©ãƒ™ãƒ«ã¾ã§ã®æ¨ªè·é›¢
 
-' ƒ‰ƒxƒ‹‚Ì‘‚«‚İæİ’è
-' WRITE_WHERE: 1=–¼‘O•t‚«”ÍˆÍ¨ŒÅ’èƒZƒ‹‚Ì‡‚Å‘A2=‘I‘ğ”ÍˆÍ‚Ì¶ãƒZƒ‹‚Ö‘
+' ãƒ©ãƒ™ãƒ«ã®æ›¸ãè¾¼ã¿å…ˆè¨­å®š
+' WRITE_WHERE: 1=åå‰ä»˜ãç¯„å›²â†’å›ºå®šã‚»ãƒ«ã®é †ã§æ›¸è¾¼ã€2=é¸æŠç¯„å›²ã®å·¦ä¸Šã‚»ãƒ«ã¸æ›¸è¾¼
 Private Const WRITE_WHERE As Long = 1
 Private Const TARGET_NAMED_RANGE As String = "LabelTarget"
 Private Const TARGET_CELL_ADDR As String = "Z1"
 
-' ‹æØ‚èF‰‰ñiŒ³‚Ì•¶š—ñ‚ÆÅ‰‚Ìƒ‰ƒxƒ‹j‚ÆA2‰ñ–ÚˆÈ~iƒ‰ƒxƒ‹“¯mj
-' ¦ ‰‰ñ‚Ì‹æØ‚èiFIRSTj‚ªgƒ}[ƒJ[h‚Æ‚µ‚Ä‹@”\‚µ‚Ü‚·
-Private Const FIRST_APPEND_SEPARATOR As String = "-"    ' —á: ”¼ŠpƒXƒy[ƒX
-Private Const SUBSEQ_APPEND_SEPARATOR As String = ","  ' —á: “ú–{Œê“Ç“_
+' åŒºåˆ‡ã‚Šï¼šåˆå›ï¼ˆå…ƒã®æ–‡å­—åˆ—ã¨æœ€åˆã®ãƒ©ãƒ™ãƒ«ï¼‰ã¨ã€2å›ç›®ä»¥é™ï¼ˆãƒ©ãƒ™ãƒ«åŒå£«ï¼‰
+' â€» åˆå›ã®åŒºåˆ‡ã‚Šï¼ˆFIRSTï¼‰ãŒâ€œãƒãƒ¼ã‚«ãƒ¼â€ã¨ã—ã¦æ©Ÿèƒ½ã—ã¾ã™
+Private Const FIRST_APPEND_SEPARATOR As String = "-"    ' ä¾‹: åŠè§’ã‚¹ãƒšãƒ¼ã‚¹
+Private Const SUBSEQ_APPEND_SEPARATOR As String = ","  ' ä¾‹: æ—¥æœ¬èªèª­ç‚¹
 
-' }Œ`¯•Êƒ^ƒOiShape.AlternativeText ‚É•t—^j
+' å›³å½¢è­˜åˆ¥ã‚¿ã‚°ï¼ˆShape.AlternativeText ã«ä»˜ä¸ï¼‰
 Private Const BRACE_SHAPE_TAG As String = "BRACE_TAG"
 
-' ˆêŠ‡íœFƒV[ƒg‘S‘Ì‚ğ‘–¸‚µ‚ÄƒZƒ‹‚Ì’Ç‹L‚ğ”‚ª‚·‚©
+' ä¸€æ‹¬å‰Šé™¤æ™‚ï¼šã‚·ãƒ¼ãƒˆå…¨ä½“ã‚’èµ°æŸ»ã—ã¦ã‚»ãƒ«ã®è¿½è¨˜ã‚’å‰¥ãŒã™ã‹
 Private Const SCAN_WHOLE_SHEET As Boolean = True
 
-' ’Ç‹LƒuƒƒbƒN‚ÌÅ‘å‘z’è’·i•K—v‚È‚ç’²®j
-Private Const MAX_LABEL_TAIL As Long = 256   ' © 64 ‚¾‚Æ’Z‚¢ƒP[ƒX‚ª‚ ‚é‚Ì‚ÅL‚°‚Ü‚·
+' è¿½è¨˜ãƒ–ãƒ­ãƒƒã‚¯ã®æœ€å¤§æƒ³å®šé•·ï¼ˆå¿…è¦ãªã‚‰èª¿æ•´ï¼‰
+Private Const MAX_LABEL_TAIL As Long = 256   ' â† 64 ã ã¨çŸ­ã„ã‚±ãƒ¼ã‚¹ãŒã‚ã‚‹ã®ã§åºƒã’ã¾ã™
 
-' === ƒ~ƒ‰[o—Í‚Ìİ’è ===
-Private Const MIRROR_ENABLED As Boolean = True          ' © —LŒø‰»‚·‚é‚©
-Private Const MIRROR_SHEETS As String = "»‘¢•[ ‡B (Œ»ê—p),ŒŸ¸‹L˜^ (Œ»ê—p)" ' © o—ÍæƒV[ƒg–¼‚ğƒJƒ“ƒ}‹æØ‚è‚Å
-Private Const MIRROR_WRITE_LABELS As Boolean = False    ' © ƒ~ƒ‰[æ‚ÌƒZƒ‹‚É‚àƒ‰ƒxƒ‹’Ç‹L‚·‚é‚È‚ç True
-' === “¯ˆêƒV[ƒg“à‚Ìƒ[ƒJƒ‹ƒ~ƒ‰[İ’è ===
-Private Const LOCAL_MIRROR_ENABLED As Boolean = True   ' “¯‚¶ƒV[ƒg‚É‚ào‚·‚È‚ç True
-Private Const LOCAL_MIRROR_BASE_ROW As Long = 30       ' ƒ~ƒ‰[ŠJn‚ÌŠî€si‚±‚±‚©‚çs”‚Ô‚ñ‰º‚Öj
-Private Const LOCAL_MIRROR_WRITE_LABELS As Boolean = False ' ƒZƒ‹’Ç‹L‚à‚·‚é‚È‚ç True
-' === “¯ˆêƒV[ƒg ŒÅ’è‘Ñƒ~ƒ‰[i6`19 ¨ 30`43j ===
+' === ãƒŸãƒ©ãƒ¼å‡ºåŠ›ã®è¨­å®š ===
+Private Const MIRROR_ENABLED As Boolean = True          ' â† æœ‰åŠ¹åŒ–ã™ã‚‹ã‹
+Private Const MIRROR_SHEETS As String = "è£½é€ ç¥¨ â‘¢ (ç¾å ´ç”¨),æ¤œæŸ»è¨˜éŒ² (ç¾å ´ç”¨)" ' â† å‡ºåŠ›å…ˆã‚·ãƒ¼ãƒˆåã‚’ã‚«ãƒ³ãƒåŒºåˆ‡ã‚Šã§
+Private Const MIRROR_WRITE_LABELS As Boolean = False    ' â† ãƒŸãƒ©ãƒ¼å…ˆã®ã‚»ãƒ«ã«ã‚‚ãƒ©ãƒ™ãƒ«è¿½è¨˜ã™ã‚‹ãªã‚‰ True
+' === åŒä¸€ã‚·ãƒ¼ãƒˆå†…ã®ãƒ­ãƒ¼ã‚«ãƒ«ãƒŸãƒ©ãƒ¼è¨­å®š ===
+Private Const LOCAL_MIRROR_ENABLED As Boolean = True   ' åŒã˜ã‚·ãƒ¼ãƒˆã«ã‚‚å‡ºã™ãªã‚‰ True
+Private Const LOCAL_MIRROR_BASE_ROW As Long = 30       ' ãƒŸãƒ©ãƒ¼é–‹å§‹ã®åŸºæº–è¡Œï¼ˆã“ã“ã‹ã‚‰è¡Œæ•°ã¶ã‚“ä¸‹ã¸ï¼‰
+Private Const LOCAL_MIRROR_WRITE_LABELS As Boolean = False ' ã‚»ãƒ«è¿½è¨˜ã‚‚ã™ã‚‹ãªã‚‰ True
+' === åŒä¸€ã‚·ãƒ¼ãƒˆ å›ºå®šå¸¯ãƒŸãƒ©ãƒ¼ï¼ˆ6ï½19 â†’ 30ï½43ï¼‰ ===
 Private Const FIXMIR_SRC_ROW_START As Long = 6
 Private Const FIXMIR_SRC_ROW_END   As Long = 19
 Private Const FIXMIR_DST_ROW_START As Long = 30
 Private Const FIXMIR_DST_ROW_END   As Long = 43
 Private Const FIXMIR_ROW_OFFSET    As Long = (FIXMIR_DST_ROW_START - FIXMIR_SRC_ROW_START)
-Private Const FIXMIR_ENABLED       As Boolean = True          ' © —LŒø/–³Œø
-Private Const FIXMIR_WRITE_LABELS  As Boolean = False         ' © ƒ~ƒ‰[æ‚ÉƒZƒ‹’Ç‹L‚à‚·‚é‚È‚ç True
+Private Const FIXMIR_ENABLED       As Boolean = True          ' â† æœ‰åŠ¹/ç„¡åŠ¹
+Private Const FIXMIR_WRITE_LABELS  As Boolean = False         ' â† ãƒŸãƒ©ãƒ¼å…ˆã«ã‚»ãƒ«è¿½è¨˜ã‚‚ã™ã‚‹ãªã‚‰ True
 
 
 '========================
-' “ü—Íƒ}ƒNƒi”CˆÓƒ‰ƒxƒ‹j
+' å…¥åŠ›ãƒã‚¯ãƒ­ï¼ˆä»»æ„ãƒ©ãƒ™ãƒ«ï¼‰
 '========================
 Public Sub DrawLeftBrace_Label_One()
     Dim rng As Range, ws As Worksheet
@@ -55,16 +55,16 @@ Public Sub DrawLeftBrace_Label_One()
     Static lastLabel As String
     
     If TypeName(Selection) <> "Range" Then
-        MsgBox "ƒZƒ‹”ÍˆÍ‚ğ‘I‘ğ‚µ‚Ä‚©‚çÀs‚µ‚Ä‚­‚¾‚³‚¢B", vbExclamation
+        MsgBox "ã‚»ãƒ«ç¯„å›²ã‚’é¸æŠã—ã¦ã‹ã‚‰å®Ÿè¡Œã—ã¦ãã ã•ã„ã€‚", vbExclamation
         Exit Sub
     End If
     Set rng = Selection
     If rng.Areas.Count > 1 Then
-        MsgBox "•¡”—Ìˆæ‚Í”ñ‘Î‰‚Å‚·B1‚Â‚Ì˜A‘±”ÍˆÍ‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢B", vbExclamation
+        MsgBox "è¤‡æ•°é ˜åŸŸã¯éå¯¾å¿œã§ã™ã€‚1ã¤ã®é€£ç¶šç¯„å›²ã‚’é¸æŠã—ã¦ãã ã•ã„ã€‚", vbExclamation
         Exit Sub
     End If
     
-    labelTxt = InputBox("Š‡ŒÊ‚É•t‚¯‚éƒ‰ƒxƒ‹‚ğ“ü—Í‚µ‚Ä‚­‚¾‚³‚¢i—áFA^B^C^ŒŸ¸j", _
+    labelTxt = InputBox("æ‹¬å¼§ã«ä»˜ã‘ã‚‹ãƒ©ãƒ™ãƒ«ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„ï¼ˆä¾‹ï¼šAï¼Bï¼Cï¼æ¤œæŸ»ï¼‰", _
                         "Brace Label", IIf(Len(lastLabel) > 0, lastLabel, "A"))
     If StrPtr(labelTxt) = 0 Then Exit Sub
     labelTxt = Trim$(labelTxt)
@@ -76,7 +76,7 @@ Public Sub DrawLeftBrace_Label_One()
 End Sub
 
 
-'\\ ƒRƒAF‘I‘ğ”ÍˆÍ‚É1–{‚Ì¶’†Š‡ŒÊ{ƒ‰ƒxƒ‹‚ğ•`‰æ \\'
+'â€•â€• ã‚³ã‚¢ï¼šé¸æŠç¯„å›²ã«1æœ¬ã®å·¦ä¸­æ‹¬å¼§ï¼‹ãƒ©ãƒ™ãƒ«ã‚’æç”» â€•â€•'
 Private Sub DrawLeftBraceWithLabelForSelection(ByVal labelTxt As String, ByVal rng As Range)
     Dim ws As Worksheet
     Dim leftPos As Single, topPos As Single, h As Single
@@ -95,10 +95,10 @@ Private Sub DrawLeftBraceWithLabelForSelection(ByVal labelTxt As String, ByVal r
         .Name = NextUniqueShapeName(ws, "Brace_" & SafeToken(labelTxt))
         .Fill.Visible = msoFalse
         .Line.Weight = BRACE_WEIGHT_PTS
-        .Line.ForeColor.RGB = RGB(0, 0, 0)           ' •
+        .Line.ForeColor.RGB = RGB(0, 0, 0)           ' é»’
         .Placement = xlMoveAndSize
         .ZOrder msoBringToFront
-        .AlternativeText = BRACE_SHAPE_TAG           ' ¯•Êƒ^ƒO
+        .AlternativeText = BRACE_SHAPE_TAG           ' è­˜åˆ¥ã‚¿ã‚°
     End With
     
     xLabel = leftPos - LABEL_X_OFFSET
@@ -116,7 +116,7 @@ Private Sub DrawLeftBraceWithLabelForSelection(ByVal labelTxt As String, ByVal r
     End With
 End Sub
 
-'\\ ƒ‰ƒxƒ‹‚ğg“Á’èƒZƒ‹h‚Ö’Ç‹Li”®•Û^‰‰ñ=FIRSTAˆÈ~=SUBSEQ‚ğŠmÀ‰»j\\'
+'â€•â€• ãƒ©ãƒ™ãƒ«ã‚’â€œç‰¹å®šã‚»ãƒ«â€ã¸è¿½è¨˜ï¼ˆæ•°å¼ä¿æŒï¼åˆå›=FIRSTã€ä»¥é™=SUBSEQã‚’ç¢ºå®ŸåŒ–ï¼‰â€•â€•'
 Private Sub WriteLabelToCell(ByVal ws As Worksheet, ByVal rng As Range, ByVal labelTxt As String)
     Dim tgt As Range, cur As String, f As String
     Dim labEsc As String, firstChunk As String, subseqChunk As String
@@ -124,7 +124,7 @@ Private Sub WriteLabelToCell(ByVal ws As Worksheet, ByVal rng As Range, ByVal la
 
     Set tgt = ResolveTargetCell(ws, rng)
     If tgt Is Nothing Then
-        MsgBox "‘‚«‚İæƒZƒ‹‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ‚Å‚µ‚½Bİ’è‚ğŠm”F‚µ‚Ä‚­‚¾‚³‚¢B", vbExclamation
+        MsgBox "æ›¸ãè¾¼ã¿å…ˆã‚»ãƒ«ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“ã§ã—ãŸã€‚è¨­å®šã‚’ç¢ºèªã—ã¦ãã ã•ã„ã€‚", vbExclamation
         Exit Sub
     End If
 
@@ -133,37 +133,37 @@ Private Sub WriteLabelToCell(ByVal ws As Worksheet, ByVal rng As Range, ByVal la
     subseqChunk = Replace$(SUBSEQ_APPEND_SEPARATOR, """", """""") & labEsc
 
     If tgt.hasFormula Then
-        ' --- ”®ƒZƒ‹F")&""" ‚ªŠù‚É‚ ‚ê‚Îu’Ç‹LÏ‚İvˆµ‚¢ ---
+        ' --- æ•°å¼ã‚»ãƒ«ï¼š")&""" ãŒæ—¢ã«ã‚ã‚Œã°ã€Œè¿½è¨˜æ¸ˆã¿ã€æ‰±ã„ ---
         f = tgt.FormulaLocal
         alreadyAppended = (InStr(1, f, ")&""", vbBinaryCompare) > 0)
-        If Left$(f, 1) = "=" Then f = Mid$(f, 2)   ' ®–{‘Ì‚¾‚¯‚É‚·‚é
+        If Left$(f, 1) = "=" Then f = Mid$(f, 2)   ' å¼æœ¬ä½“ã ã‘ã«ã™ã‚‹
 
         If alreadyAppended Then
-            ' 2‰ñ–ÚˆÈ~FSUBSEQ‚Å˜AŒ‹
+            ' 2å›ç›®ä»¥é™ï¼šSUBSEQã§é€£çµ
             tgt.FormulaLocal = "=(" & f & ")&""" & subseqChunk & """"
         Else
-            ' ‰‰ñF•K‚¸FIRST‚Å˜AŒ‹iŒ³‚Ì®‚ÌŒ©‚½–Ú‚ª‹ó‚Å‚àFIRST‚ğ•t‚¯‚éj
+            ' åˆå›ï¼šå¿…ãšFIRSTã§é€£çµï¼ˆå…ƒã®å¼ã®è¦‹ãŸç›®ãŒç©ºã§ã‚‚FIRSTã‚’ä»˜ã‘ã‚‹ï¼‰
             tgt.FormulaLocal = "=(" & f & ")&""" & firstChunk & """"
         End If
 
     Else
-        ' --- ’lƒZƒ‹ ---
+        ' --- å€¤ã‚»ãƒ« ---
         cur = CStr(tgt.Value)
-        ' uæ“ª‚ªFIRST‚Ån‚Ü‚év‚Ü‚½‚Íu‚Ç‚±‚©‚ÉSUBSEQ‚ª‚ ‚év’Ç‹LÏ‚İ
+        ' ã€Œå…ˆé ­ãŒFIRSTã§å§‹ã¾ã‚‹ã€ã¾ãŸã¯ã€Œã©ã“ã‹ã«SUBSEQãŒã‚ã‚‹ã€ï¼è¿½è¨˜æ¸ˆã¿
         alreadyAppended = (Left$(cur, Len(FIRST_APPEND_SEPARATOR)) = FIRST_APPEND_SEPARATOR) _
                           Or (InStr(1, cur, SUBSEQ_APPEND_SEPARATOR, vbBinaryCompare) > 0)
 
         If alreadyAppended Then
-            ' 2‰ñ–ÚˆÈ~FSUBSEQ‚Å’Ç‰Á
+            ' 2å›ç›®ä»¥é™ï¼šSUBSEQã§è¿½åŠ 
             tgt.Value = cur & SUBSEQ_APPEND_SEPARATOR & labelTxt
         Else
-            ' ‰‰ñF•K‚¸FIRST‚Å“ü‚ê‚éiŒ³‚ª‹ó‚Å‚àFIRST‚ğ•t‚¯‚éj
+            ' åˆå›ï¼šå¿…ãšFIRSTã§å…¥ã‚Œã‚‹ï¼ˆå…ƒãŒç©ºã§ã‚‚FIRSTã‚’ä»˜ã‘ã‚‹ï¼‰
             tgt.Value = cur & FIRST_APPEND_SEPARATOR & labelTxt
         End If
     End If
 End Sub
 
-'' ®‚É FIRST/SUBSEQ ‚ğŠÜ‚ŞƒŠƒeƒ‰ƒ‹i"&"‚Å˜AŒ‹‚³‚ê‚½ "..."j‚ª‚ ‚é‚©
+'' å¼ã« FIRST/SUBSEQ ã‚’å«ã‚€ãƒªãƒ†ãƒ©ãƒ«ï¼ˆ"&"ã§é€£çµã•ã‚ŒãŸ "..."ï¼‰ãŒã‚ã‚‹ã‹
 'Private Function FormulaHasAnySeparatorLiteral(ByVal f As String) As Boolean
 '    Dim s As String, i As Long, p As Long, qOpen As Long, qClose As Long, lit As String
 '    If Len(f) = 0 Then Exit Function
@@ -189,13 +189,13 @@ End Sub
 
 
 '========================
-' š ˆêŠ‡íœi‚±‚Ìƒ}ƒNƒ‚ª’Ç‰Á‚µ‚½}Œ`{ƒZƒ‹’Ç‹L‚Ì‚İj
+' â˜… ä¸€æ‹¬å‰Šé™¤ï¼ˆã“ã®ãƒã‚¯ãƒ­ãŒè¿½åŠ ã—ãŸå›³å½¢ï¼‹ã‚»ãƒ«è¿½è¨˜ã®ã¿ï¼‰
 '========================
 Public Sub DeleteAllBracesAndLabels_ActiveSheet()
     Dim ws As Worksheet: Set ws = ActiveSheet
-    DeleteAllBraceShapes ws           ' }Œ`iƒ^ƒO/–¼‘O‹K‘¥‚Å”»’èj
+    DeleteAllBraceShapes ws           ' å›³å½¢ï¼ˆã‚¿ã‚°/åå‰è¦å‰‡ã§åˆ¤å®šï¼‰
     If SCAN_WHOLE_SHEET Then
-        StripAppendedLabelsOnSheet ws ' ƒZƒ‹iÅ‰‚Ì‹æØ‚è‚Å”»’èj
+        StripAppendedLabelsOnSheet ws ' ã‚»ãƒ«ï¼ˆæœ€åˆã®åŒºåˆ‡ã‚Šã§åˆ¤å®šï¼‰
     Else
         Dim tgt As Range
         Set tgt = TryGetNamedRange(ws, TARGET_NAMED_RANGE)
@@ -207,13 +207,13 @@ Public Sub DeleteAllBracesAndLabels_ActiveSheet()
     End If
 End Sub
 
-'i”CˆÓj‘I‘ğ”ÍˆÍ‚Ì‚İ‘ÎÛ‚Ìíœ
+'ï¼ˆä»»æ„ï¼‰é¸æŠç¯„å›²ã®ã¿å¯¾è±¡ã®å‰Šé™¤
 Public Sub DeleteBracesAndLabels_SelectedRange()
     Dim ws As Worksheet, ur As Range, r As Range
     If TypeName(Selection) <> "Range" Then Exit Sub
     Set ws = ActiveSheet
 
-    ' }Œ`F‘I‘ğc”ÍˆÍ‚Æd‚È‚é & ƒ^ƒO/–¼‘O‹K‘¥ˆê’v‚Ì‚İíœ
+    ' å›³å½¢ï¼šé¸æŠç¸¦ç¯„å›²ã¨é‡ãªã‚‹ & ã‚¿ã‚°/åå‰è¦å‰‡ä¸€è‡´ã®ã¿å‰Šé™¤
     Dim i As Long, sh As Shape, topSel As Single, bottomSel As Single
     topSel = Selection.Top: bottomSel = Selection.Top + Selection.Height
     For i = ws.Shapes.Count To 1 Step -1
@@ -225,7 +225,7 @@ Public Sub DeleteBracesAndLabels_SelectedRange()
         End If
     Next i
 
-    ' ƒZƒ‹F‘I‘ğ”ÍˆÍ“à‚Ì‚İ”‚ª‚·
+    ' ã‚»ãƒ«ï¼šé¸æŠç¯„å›²å†…ã®ã¿å‰¥ãŒã™
     On Error Resume Next: Set ur = Intersect(ws.UsedRange, Selection): On Error GoTo 0
     If ur Is Nothing Then Exit Sub
 
@@ -238,7 +238,7 @@ Public Sub DeleteBracesAndLabels_SelectedRange()
 End Sub
 
 
-'\\ }Œ`ŠÖ˜A \\'
+'â€•â€• å›³å½¢é–¢é€£ â€•â€•'
 Public Sub EnablePrintingForBraceShapes_ActiveSheet()
     Dim ws As Worksheet: Set ws = ActiveSheet
     Dim sh As Shape
@@ -273,13 +273,13 @@ Private Function IsBraceShape(ByVal sh As Shape) As Boolean
     On Error GoTo 0
 End Function
 
-' 1ƒZƒ‹•ª‚Ì”‚ª‚µi’lƒZƒ‹‚Íg––”öƒEƒBƒ“ƒhƒEh‚ÅÅ‰‚Ì‹æØ‚è‚ğ’T‚·j
+' 1ã‚»ãƒ«åˆ†ã®å‰¥ãŒã—ï¼ˆå€¤ã‚»ãƒ«ã¯â€œæœ«å°¾ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦â€ã§æœ€åˆã®åŒºåˆ‡ã‚Šã‚’æ¢ã™ï¼‰
 Private Sub StripAppendedLabelFromCell(ByVal tgt As Range)
     Dim f As String, cur As String
     If tgt Is Nothing Then Exit Sub
 
     If tgt.hasFormula Then
-        ' --- ”®ƒZƒ‹i]—ˆ‚Ç‚¨‚èj ---
+        ' --- æ•°å¼ã‚»ãƒ«ï¼ˆå¾“æ¥ã©ãŠã‚Šï¼‰ ---
         f = tgt.FormulaLocal
         Dim inner As String
         inner = ExtractOriginalFormulaSmart(f)
@@ -289,14 +289,14 @@ Private Sub StripAppendedLabelFromCell(ByVal tgt As Range)
             Err.Clear: On Error GoTo 0
         End If
     Else
-        ' --- ’lƒZƒ‹F––”öƒEƒBƒ“ƒhƒE’Tõ‚Åæ“ª‹æØ‚è‚ğ“Á’è ---
+        ' --- å€¤ã‚»ãƒ«ï¼šæœ«å°¾ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦æ¢ç´¢ã§å…ˆé ­åŒºåˆ‡ã‚Šã‚’ç‰¹å®š ---
         cur = CStr(tgt.Value)
         If Len(cur) = 0 Then Exit Sub
 
         Dim startWin As Long, posFirst As Long, posSub As Long, cutPos As Long
         startWin = Application.Max(1, Len(cur) - MAX_LABEL_TAIL + 1)
 
-        ' ––”öƒEƒBƒ“ƒhƒE‚Ì’†‚¾‚¯‚ÅuÅ‰‚ÉŒ»‚ê‚év‹æØ‚è‚ğ’T‚·
+        ' æœ«å°¾ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ä¸­ã ã‘ã§ã€Œæœ€åˆã«ç¾ã‚Œã‚‹ã€åŒºåˆ‡ã‚Šã‚’æ¢ã™
         posFirst = InStr(startWin, cur, FIRST_APPEND_SEPARATOR, vbBinaryCompare)
         posSub = InStr(startWin, cur, SUBSEQ_APPEND_SEPARATOR, vbBinaryCompare)
 
@@ -305,7 +305,7 @@ Private Sub StripAppendedLabelFromCell(ByVal tgt As Range)
         ElseIf posSub > 0 Then
             cutPos = posSub
         Else
-            Exit Sub  ' ––”ö‘¤‚É‹æØ‚è‚ªŒ©‚Â‚©‚ç‚È‚¢’Ç‹L–³‚µ‚Æ”»’f
+            Exit Sub  ' æœ«å°¾å´ã«åŒºåˆ‡ã‚ŠãŒè¦‹ã¤ã‹ã‚‰ãªã„ï¼è¿½è¨˜ç„¡ã—ã¨åˆ¤æ–­
         End If
 
         If cutPos <= 1 Then
@@ -316,15 +316,15 @@ Private Sub StripAppendedLabelFromCell(ByVal tgt As Range)
     End If
 End Sub
 
-' =(<expr>)&"..." ‚ª•¡”’i‚ ‚Á‚Ä‚àA
-' Å‰‚É FIRST/SUBSEQ ‚ğŠÜ‚ŞƒŠƒeƒ‰ƒ‹‚ªo‚½‰ÓŠ‚Å <expr> ‚¾‚¯‚É–ß‚·
+' =(<expr>)&"..." ãŒè¤‡æ•°æ®µã‚ã£ã¦ã‚‚ã€
+' æœ€åˆã« FIRST/SUBSEQ ã‚’å«ã‚€ãƒªãƒ†ãƒ©ãƒ«ãŒå‡ºãŸç®‡æ‰€ã§ <expr> ã ã‘ã«æˆ»ã™
 Private Function ExtractOriginalFormulaSmart(ByVal f As String) As String
     Dim s As String, i As Long, p As Long, qOpen As Long, qClose As Long
     Dim lit As String
 
     If Len(f) = 0 Then Exit Function
     s = f: If Left$(s, 1) <> "=" Then s = "=" & s
-    If Left$(s, 2) <> "=(" Then Exit Function   ' ‘z’èŒ`ˆÈŠO‚Í•Ô‚³‚È‚¢
+    If Left$(s, 2) <> "=(" Then Exit Function   ' æƒ³å®šå½¢ä»¥å¤–ã¯è¿”ã•ãªã„
 
     i = 1
     Do
@@ -334,22 +334,22 @@ Private Function ExtractOriginalFormulaSmart(ByVal f As String) As String
         qClose = InStr(qOpen + 1, s, """", vbBinaryCompare)
         If qClose = 0 Then Exit Do
 
-        lit = Mid$(s, qOpen + 1, qClose - (qOpen + 1)) ' "c" ‚Ì’†g
+        lit = Mid$(s, qOpen + 1, qClose - (qOpen + 1)) ' "â€¦" ã®ä¸­èº«
         If (InStr(1, lit, FIRST_APPEND_SEPARATOR, vbBinaryCompare) > 0) Or _
            (InStr(1, lit, SUBSEQ_APPEND_SEPARATOR, vbBinaryCompare) > 0) Then
-            ExtractOriginalFormulaSmart = Mid$(s, 3, (p - 1) - 3) ' g=(h’¼Œã`’¼‘O‚Ì g)h
+            ExtractOriginalFormulaSmart = Mid$(s, 3, (p - 1) - 3) ' â€œ=(â€ç›´å¾Œï½ç›´å‰ã® â€œ)â€
             Exit Function
         End If
         i = qClose + 1
     Loop
 
-    ' ––”ö˜AŒ‹‚ª–³‚­ =(<expr>) ‚¾‚¯‚È‚ç‚»‚Ì‚Ü‚Ü•Ô‚·
+    ' æœ«å°¾é€£çµãŒç„¡ã =(<expr>) ã ã‘ãªã‚‰ãã®ã¾ã¾è¿”ã™
     If Right$(s, 1) = ")" Then
         ExtractOriginalFormulaSmart = Mid$(s, 3, Len(s) - 3 - 1)
     End If
 End Function
 
-' ƒV[ƒg‘S‘Ì‚ğ‘–¸‚µ‚ÄA“–ƒ}ƒNƒ—R—ˆi‹æØ‚è‚Å”»’èj‚Ì’Ç‹L‚ğ”‚ª‚·
+' ã‚·ãƒ¼ãƒˆå…¨ä½“ã‚’èµ°æŸ»ã—ã¦ã€å½“ãƒã‚¯ãƒ­ç”±æ¥ï¼ˆåŒºåˆ‡ã‚Šã§åˆ¤å®šï¼‰ã®è¿½è¨˜ã‚’å‰¥ãŒã™
 Private Sub StripAppendedLabelsOnSheet(ByVal ws As Worksheet)
     Dim ur As Range, r As Range
     On Error Resume Next: Set ur = ws.UsedRange: On Error GoTo 0
@@ -370,7 +370,7 @@ End Sub
 
 
 '========================
-' ‘‚«‚İæƒZƒ‹‚Ì‰ğŒˆE‹¤’Êƒwƒ‹ƒp[
+' æ›¸ãè¾¼ã¿å…ˆã‚»ãƒ«ã®è§£æ±ºãƒ»å…±é€šãƒ˜ãƒ«ãƒ‘ãƒ¼
 '========================
 Private Function ResolveTargetCell(ByVal ws As Worksheet, ByVal rng As Range) As Range
     Dim tgt As Range
@@ -393,8 +393,8 @@ End Function
 Private Function TryGetNamedRange(ws As Worksheet, ByVal nm As String) As Range
     Dim r As Range
     On Error Resume Next
-    Set r = ws.Range(nm)   ' ƒV[ƒgƒXƒR[ƒv—Dæ
-    If r Is Nothing Then Set r = Range(nm) ' ƒuƒbƒNƒXƒR[ƒv
+    Set r = ws.Range(nm)   ' ã‚·ãƒ¼ãƒˆã‚¹ã‚³ãƒ¼ãƒ—å„ªå…ˆ
+    If r Is Nothing Then Set r = Range(nm) ' ãƒ–ãƒƒã‚¯ã‚¹ã‚³ãƒ¼ãƒ—
     On Error GoTo 0
     Set TryGetNamedRange = r
 End Function
@@ -469,12 +469,12 @@ Private Function NextUniqueShapeName(ws As Worksheet, base As String) As String
     Loop
 End Function
 
-' ƒ‰ƒxƒ‹‚ğ–¼‘O‚ÉŠÜ‚ß‚Ä‚àˆÀ‘S‚ÈŠÈˆÕƒg[ƒNƒ“‰»
+' ãƒ©ãƒ™ãƒ«ã‚’åå‰ã«å«ã‚ã¦ã‚‚å®‰å…¨ãªç°¡æ˜“ãƒˆãƒ¼ã‚¯ãƒ³åŒ–
 Private Function SafeToken(ByVal s As String) As String
     Dim r As String
     r = s
     r = Replace$(r, " ", "")
-    r = Replace$(r, "@", "")
+    r = Replace$(r, "ã€€", "")
     r = Replace$(r, "/", "_")
     r = Replace$(r, "\", "_")
     r = Replace$(r, ":", "_")
@@ -488,22 +488,22 @@ Private Function SafeToken(ByVal s As String) As String
 End Function
 
 '========================
-' ŒöŠJƒ}ƒNƒFÀs‚·‚é‚Æ‘‚«‚İæƒZƒ‹‚É =TEXT(K4,"dd")
+' å…¬é–‹ãƒã‚¯ãƒ­ï¼šå®Ÿè¡Œã™ã‚‹ã¨æ›¸ãè¾¼ã¿å…ˆã‚»ãƒ«ã« =TEXT(K4,"dd")
 '========================
 Public Sub Write_TEXT_K4_dd_ToTarget()
     Dim ws As Worksheet, rng As Range
     Set ws = ActiveSheet
 
-    ' WRITE_WHERE=1 ‚Ìê‡‚Í LabelTarget / Z1 ‚ğg—p
-    ' WRITE_WHERE=2 ‚Ìê‡‚Í‘I‘ğ”ÍˆÍ‚Ì¶ãƒZƒ‹‚ğg—p
+    ' WRITE_WHERE=1 ã®å ´åˆã¯ LabelTarget / Z1 ã‚’ä½¿ç”¨
+    ' WRITE_WHERE=2 ã®å ´åˆã¯é¸æŠç¯„å›²ã®å·¦ä¸Šã‚»ãƒ«ã‚’ä½¿ç”¨
     If WRITE_WHERE = 2 Then
         If TypeName(Selection) <> "Range" Then
-            MsgBox "WRITE_WHERE=2 ‚Ì‚Æ‚«‚ÍƒZƒ‹”ÍˆÍ‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢B", vbExclamation
+            MsgBox "WRITE_WHERE=2 ã®ã¨ãã¯ã‚»ãƒ«ç¯„å›²ã‚’é¸æŠã—ã¦ãã ã•ã„ã€‚", vbExclamation
             Exit Sub
         End If
         Set rng = Selection
     Else
-        ' ƒ_ƒ~[‚ÅƒV[ƒg‚ÌA1‚ğ“n‚µ‚Ä‚à ResolveTargetCell ‘¤‚Å NamedRange/ŒÅ’èƒZƒ‹‚ÉU‚è•ª‚¯‚Ü‚·
+        ' ãƒ€ãƒŸãƒ¼ã§ã‚·ãƒ¼ãƒˆã®A1ã‚’æ¸¡ã—ã¦ã‚‚ ResolveTargetCell å´ã§ NamedRange/å›ºå®šã‚»ãƒ«ã«æŒ¯ã‚Šåˆ†ã‘ã¾ã™
         Set rng = ws.Range("A1")
     End If
 
@@ -511,48 +511,48 @@ Public Sub Write_TEXT_K4_dd_ToTarget()
 End Sub
 
 '========================
-' w’èƒZƒ‹‚Ö =TEXT(K4,"dd") ‚ğ“ü—Í
+' æŒ‡å®šã‚»ãƒ«ã¸ =TEXT(K4,"dd") ã‚’å…¥åŠ›
 '========================
 Private Sub SetTargetToTEXTdd(ByVal ws As Worksheet, ByVal rng As Range)
     Dim tgt As Range
     Set tgt = ResolveTargetCell(ws, rng)
     If tgt Is Nothing Then
-        MsgBox "‘‚«‚İæƒZƒ‹‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ‚Å‚µ‚½BWRITE_WHERE / –¼‘O•t‚«”ÍˆÍ / ƒAƒhƒŒƒX‚ğŠm”F‚µ‚Ä‚­‚¾‚³‚¢B", vbExclamation
+        MsgBox "æ›¸ãè¾¼ã¿å…ˆã‚»ãƒ«ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“ã§ã—ãŸã€‚WRITE_WHERE / åå‰ä»˜ãç¯„å›² / ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’ç¢ºèªã—ã¦ãã ã•ã„ã€‚", vbExclamation
         Exit Sub
     End If
     tgt.FormulaLocal = "=TEXT(K4,""d"")"
 End Sub
 
 '========================
-' }Œ`{ƒZƒ‹ƒ‰ƒxƒ‹ˆêŠ‡íœ ¨ ’¼Œã‚É =TEXT(K4,"dd") ‚ğ“ü—Í
+' å›³å½¢ï¼‹ã‚»ãƒ«ãƒ©ãƒ™ãƒ«ä¸€æ‹¬å‰Šé™¤ â†’ ç›´å¾Œã« =TEXT(K4,"dd") ã‚’å…¥åŠ›
 '========================
 Public Sub DeleteAllBracesAndLabels_AndWriteTEXTdd()
     Dim ws As Worksheet: Set ws = ActiveSheet
-    ' 1) Šù‘¶‚ÌˆêŠ‡íœ‚ğÀs
+    ' 1) æ—¢å­˜ã®ä¸€æ‹¬å‰Šé™¤ã‚’å®Ÿè¡Œ
     DeleteAllBracesAndLabels_ActiveSheet
-    ' 2) ‘‚«‚İæƒZƒ‹‚ğ‰ğŒˆ‚µ‚Ä TEXTdd ‚ğ“Š“ü
+    ' 2) æ›¸ãè¾¼ã¿å…ˆã‚»ãƒ«ã‚’è§£æ±ºã—ã¦ TEXTdd ã‚’æŠ•å…¥
     If WRITE_WHERE = 2 Then
-        ' ‘I‘ğ”ÍˆÍ¶ãƒZƒ‹‚ğƒ^[ƒQƒbƒg‚É‚·‚é‰^—p
+        ' é¸æŠç¯„å›²å·¦ä¸Šã‚»ãƒ«ã‚’ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã«ã™ã‚‹é‹ç”¨
         If TypeName(Selection) = "Range" Then
             SetTargetToTEXTdd ws, Selection
         Else
-            ' ”O‚Ì‚½‚ß‚ÌƒtƒH[ƒ‹ƒoƒbƒN
+            ' å¿µã®ãŸã‚ã®ãƒ•ã‚©ãƒ¼ãƒ«ãƒãƒƒã‚¯
             SetTargetToTEXTdd ws, ws.Range("A1")
         End If
     Else
-        ' –¼‘O•t‚«”ÍˆÍ^ŒÅ’èƒZƒ‹‰^—p
-        SetTargetToTEXTdd ws, ws.Range("A1")  ' ResolveTargetCell ‘¤‚Å NamedRange / ŒÅ’èƒZƒ‹‚ÉU‚è•ª‚¯
+        ' åå‰ä»˜ãç¯„å›²ï¼å›ºå®šã‚»ãƒ«é‹ç”¨
+        SetTargetToTEXTdd ws, ws.Range("A1")  ' ResolveTargetCell å´ã§ NamedRange / å›ºå®šã‚»ãƒ«ã«æŒ¯ã‚Šåˆ†ã‘
     End If
 End Sub
 
 '========================
-' ‘I‘ğ”ÍˆÍ‚¾‚¯íœ ¨ ’¼Œã‚É =TEXT(K4,"dd") ‚ğ“ü—Í
+' é¸æŠç¯„å›²ã ã‘å‰Šé™¤ â†’ ç›´å¾Œã« =TEXT(K4,"dd") ã‚’å…¥åŠ›
 '========================
 Public Sub DeleteBracesAndLabels_SelectedRange_AndWriteTEXTdd()
     Dim ws As Worksheet: Set ws = ActiveSheet
-    ' 1) ‘I‘ğ”ÍˆÍ‚Ì‚İ‚Ìíœ
+    ' 1) é¸æŠç¯„å›²ã®ã¿ã®å‰Šé™¤
     DeleteBracesAndLabels_SelectedRange
-    ' 2) ‘‚«‚İæƒZƒ‹‚É TEXTdd ‚ğ“Š“ü
+    ' 2) æ›¸ãè¾¼ã¿å…ˆã‚»ãƒ«ã« TEXTdd ã‚’æŠ•å…¥
     If WRITE_WHERE = 2 Then
         If TypeName(Selection) = "Range" Then
             SetTargetToTEXTdd ws, Selection
@@ -564,7 +564,7 @@ Public Sub DeleteBracesAndLabels_SelectedRange_AndWriteTEXTdd()
     End If
 End Sub
 
-' ƒJƒ“ƒ}‹æØ‚è‚ğ‚à‚Æ‚ÉA‘¶İ‚·‚éƒ[ƒNƒV[ƒg‚¾‚¯•Ô‚·
+' ã‚«ãƒ³ãƒåŒºåˆ‡ã‚Šã‚’ã‚‚ã¨ã«ã€å­˜åœ¨ã™ã‚‹ãƒ¯ãƒ¼ã‚¯ã‚·ãƒ¼ãƒˆã ã‘è¿”ã™
 Private Function MirrorSheetList() As Collection
     Dim col As New Collection
     Dim arr() As String, i As Long, nm As String
@@ -584,8 +584,8 @@ Private Function MirrorSheetList() As Collection
     Set MirrorSheetList = col
 End Function
 
-' Œ³‚Ì‘I‘ğ”ÍˆÍ‚Æ“¯‚¶u—ñv‚¾‚¯‚ğA•ÊƒV[ƒg‚Ìw’ès”ÍˆÍ‚Åì‚é
-' Œ³‚Ì‘I‘ğ”ÍˆÍ‚Æ“¯‚¶us~—ñv‚Ì‹éŒ`‚ğ•ÊƒV[ƒg‚Éì‚é
+' å…ƒã®é¸æŠç¯„å›²ã¨åŒã˜ã€Œåˆ—ã€ã ã‘ã‚’ã€åˆ¥ã‚·ãƒ¼ãƒˆã®æŒ‡å®šè¡Œç¯„å›²ã§ä½œã‚‹
+' å…ƒã®é¸æŠç¯„å›²ã¨åŒã˜ã€Œè¡ŒÃ—åˆ—ã€ã®çŸ©å½¢ã‚’åˆ¥ã‚·ãƒ¼ãƒˆã«ä½œã‚‹
 Private Function BuildSameRectRange(ByVal ws As Worksheet, ByVal src As Range) As Range
     Dim r1 As Long, r2 As Long, c1 As Long, c2 As Long
     r1 = src.row
@@ -595,7 +595,7 @@ Private Function BuildSameRectRange(ByVal ws As Worksheet, ByVal src As Range) A
     Set BuildSameRectRange = ws.Range(ws.Cells(r1, c1), ws.Cells(r2, c2))
 End Function
 
-' ‘I‘ğ”ÍˆÍ‚ÉŠ‡ŒÊ‚ğ•`‰æ ¨ “¯ˆêƒV[ƒg30`43s‚É‚ài“¯‚¶—ñj¨ ‘¼ƒV[ƒg‚Ö‚àƒ~ƒ‰[
+' é¸æŠç¯„å›²ã«æ‹¬å¼§ã‚’æç”» â†’ åŒä¸€ã‚·ãƒ¼ãƒˆ30ï½43è¡Œã«ã‚‚ï¼ˆåŒã˜åˆ—ï¼‰â†’ ä»–ã‚·ãƒ¼ãƒˆã¸ã‚‚ãƒŸãƒ©ãƒ¼
 Public Sub DrawLeftBrace_Label_One_WithMirror()
     Dim rng As Range, labelTxt As String
     Dim ws As Worksheet: Set ws = ActiveSheet
@@ -603,21 +603,21 @@ Public Sub DrawLeftBrace_Label_One_WithMirror()
     Dim rngLocal As Range
 
     If TypeName(Selection) <> "Range" Or Selection.Areas.Count > 1 Then
-        MsgBox "ƒ~ƒ‰[o—Í•t‚«F˜A‘±‚µ‚½ƒZƒ‹”ÍˆÍ‚ğ1‚Â‘I‘ğ‚µ‚ÄÀs‚µ‚Ä‚­‚¾‚³‚¢B", vbExclamation
+        MsgBox "ãƒŸãƒ©ãƒ¼å‡ºåŠ›ä»˜ãï¼šé€£ç¶šã—ãŸã‚»ãƒ«ç¯„å›²ã‚’1ã¤é¸æŠã—ã¦å®Ÿè¡Œã—ã¦ãã ã•ã„ã€‚", vbExclamation
         Exit Sub
     End If
     Set rng = Selection
 
-    labelTxt = InputBox("Š‡ŒÊ‚É•t‚¯‚éƒ‰ƒxƒ‹‚ğ“ü—Í‚µ‚Ä‚­‚¾‚³‚¢i—áFA^B^C^ŒŸ¸j", "Brace Label", "A")
+    labelTxt = InputBox("æ‹¬å¼§ã«ä»˜ã‘ã‚‹ãƒ©ãƒ™ãƒ«ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„ï¼ˆä¾‹ï¼šAï¼Bï¼Cï¼æ¤œæŸ»ï¼‰", "Brace Label", "A")
     If StrPtr(labelTxt) = 0 Then Exit Sub
     labelTxt = Trim$(labelTxt)
     If Len(labelTxt) = 0 Then Exit Sub
 
-    ' 1) Œ³ƒV[ƒg‚Éì¬
+    ' 1) å…ƒã‚·ãƒ¼ãƒˆã«ä½œæˆ
     DrawLeftBraceWithLabelForSelection labelTxt, rng
     WriteLabelToCell ws, rng, labelTxt
     
-    ' 1.5) “¯ˆêƒV[ƒg ŒÅ’è‘Ñƒ~ƒ‰[i6`19 ¨ 30`43A‘I‘ğ‚Ìd‚È‚é•”•ª‚¾‚¯j
+    ' 1.5) åŒä¸€ã‚·ãƒ¼ãƒˆ å›ºå®šå¸¯ãƒŸãƒ©ãƒ¼ï¼ˆ6ï½19 â†’ 30ï½43ã€é¸æŠã®é‡ãªã‚‹éƒ¨åˆ†ã ã‘ï¼‰
     If FIXMIR_ENABLED Then
         Dim rngFix As Range
         Set rngFix = MapBand6_19_To30_43(rng)
@@ -629,7 +629,7 @@ Public Sub DrawLeftBrace_Label_One_WithMirror()
         End If
     End If
 
-'    ' 2) “¯‚¶ƒV[ƒgFŠî€s‚©‚çg‘I‘ğ‚Æ“¯‚¶s”h‚Åƒ[ƒJƒ‹ƒ~ƒ‰[
+'    ' 2) åŒã˜ã‚·ãƒ¼ãƒˆï¼šåŸºæº–è¡Œã‹ã‚‰â€œé¸æŠã¨åŒã˜è¡Œæ•°â€ã§ãƒ­ãƒ¼ã‚«ãƒ«ãƒŸãƒ©ãƒ¼
 '    If LOCAL_MIRROR_ENABLED Then
 '        Set rngLocal = BuildSameColumnsRangeByRowCount(ws, rng, LOCAL_MIRROR_BASE_ROW)
 '        DrawLeftBraceWithLabelForSelection labelTxt, rngLocal
@@ -638,12 +638,12 @@ Public Sub DrawLeftBrace_Label_One_WithMirror()
 '        End If
 '    End If
 
-    ' 3) ‘¼ƒV[ƒg‚Ö‚Ìƒ~ƒ‰[iŠù‘¶İ’è‚É]‚¤j
+    ' 3) ä»–ã‚·ãƒ¼ãƒˆã¸ã®ãƒŸãƒ©ãƒ¼ï¼ˆæ—¢å­˜è¨­å®šã«å¾“ã†ï¼‰
     If MIRROR_ENABLED Then
         Set list = MirrorSheetList()
         For Each w In list
-            Set rngT = BuildSameRectRange(w, rng) ' ©u‘I‘ğ‚Æ“¯‚¶s~—ñv‚Ì‹éŒ`ƒ~ƒ‰[‚ğg‚Á‚Ä‚¢‚éê‡
-            ' ¦ ‚à‚µu—ñ‚¾‚¯“¯‚¶v‚É‚µ‚½‚¢‚È‚ç BuildSameColumnsRange(w, rng, rng.Row, rng.Row + rng.Rows.Count - 1) ‚É•ÏX
+            Set rngT = BuildSameRectRange(w, rng) ' â†ã€Œé¸æŠã¨åŒã˜è¡ŒÃ—åˆ—ã€ã®çŸ©å½¢ãƒŸãƒ©ãƒ¼ã‚’ä½¿ã£ã¦ã„ã‚‹å ´åˆ
+            ' â€» ã‚‚ã—ã€Œåˆ—ã ã‘åŒã˜ã€ã«ã—ãŸã„ãªã‚‰ BuildSameColumnsRange(w, rng, rng.Row, rng.Row + rng.Rows.Count - 1) ã«å¤‰æ›´
             DrawLeftBraceWithLabelForSelection labelTxt, rngT
             If MIRROR_WRITE_LABELS Then
                 WriteLabelToCell w, rngT, labelTxt
@@ -656,27 +656,27 @@ Public Sub MirrorLastSelectionToOtherSheets()
     Dim rng As Range, ws As Worksheet: Set ws = ActiveSheet
     Dim list As Collection, w As Worksheet, rngT As Range
     Dim labelTxt As String
-    Dim rngLocal As Range  ' š“¯ˆêƒV[ƒg 30`43 —p
+    Dim rngLocal As Range  ' â˜…åŒä¸€ã‚·ãƒ¼ãƒˆ 30ï½43 ç”¨
 
     If Not MIRROR_ENABLED Then Exit Sub
     If TypeName(Selection) <> "Range" Or Selection.Areas.Count > 1 Then
-        MsgBox "˜A‘±‚µ‚½ƒZƒ‹”ÍˆÍ‚ğ1‚Â‘I‘ğ‚µ‚Ä‚©‚çÀs‚µ‚Ä‚­‚¾‚³‚¢B", vbExclamation
+        MsgBox "é€£ç¶šã—ãŸã‚»ãƒ«ç¯„å›²ã‚’1ã¤é¸æŠã—ã¦ã‹ã‚‰å®Ÿè¡Œã—ã¦ãã ã•ã„ã€‚", vbExclamation
         Exit Sub
     End If
     Set rng = Selection
 
-    labelTxt = InputBox("ƒ~ƒ‰[æ‚É•t‚¯‚éƒ‰ƒxƒ‹‚ğ“ü—Í‚µ‚Ä‚­‚¾‚³‚¢", "Brace Label (Mirror Only)", "A")
+    labelTxt = InputBox("ãƒŸãƒ©ãƒ¼å…ˆã«ä»˜ã‘ã‚‹ãƒ©ãƒ™ãƒ«ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„", "Brace Label (Mirror Only)", "A")
     If StrPtr(labelTxt) = 0 Then Exit Sub
     labelTxt = Trim$(labelTxt)
     If Len(labelTxt) = 0 Then Exit Sub
 
-    ' š“¯ˆêƒV[ƒg 30`43 ‚ÉA‘I‘ğ”ÍˆÍ‚Æ“¯‚¶u—ñ•v‚Åì¬
+    ' â˜…åŒä¸€ã‚·ãƒ¼ãƒˆ 30ï½43 ã«ã€é¸æŠç¯„å›²ã¨åŒã˜ã€Œåˆ—å¹…ã€ã§ä½œæˆ
     Set rngLocal = BuildSameColumnsAtRows(ws, rng, 30, 43)
     DrawLeftBraceWithLabelForSelection labelTxt, rngLocal
-    ' ƒ~ƒ‰[æ‚ÌƒZƒ‹’Ç‹L‚às‚¢‚½‚¢ê‡‚Í«‚ğ—LŒø‰»
+    ' ãƒŸãƒ©ãƒ¼å…ˆã®ã‚»ãƒ«è¿½è¨˜ã‚‚è¡Œã„ãŸã„å ´åˆã¯â†“ã‚’æœ‰åŠ¹åŒ–
     'WriteLabelToCell ws, rngLocal, labelTxt
 
-    ' ‘¼ƒV[ƒg‚Öƒ~ƒ‰[i“¯‚¶‹éŒ`j
+    ' ä»–ã‚·ãƒ¼ãƒˆã¸ãƒŸãƒ©ãƒ¼ï¼ˆåŒã˜çŸ©å½¢ï¼‰
     Set list = MirrorSheetList()
     For Each w In list
         Set rngT = BuildSameRectRange(w, rng)
@@ -689,22 +689,22 @@ End Sub
 
 
 '========================
-' ƒ~ƒ‰[æ‚àŠÜ‚ß‚ÄˆêŠ‡íœiƒV[ƒg‘S‘Ìj
+' ãƒŸãƒ©ãƒ¼å…ˆã‚‚å«ã‚ã¦ä¸€æ‹¬å‰Šé™¤ï¼ˆã‚·ãƒ¼ãƒˆå…¨ä½“ï¼‰
 '========================
 Public Sub DeleteAllBracesAndLabels_WithMirror()
     Dim ws As Worksheet: Set ws = ActiveSheet
     Dim list As Collection, w As Worksheet
 
-    ' ‚Ü‚¸ƒAƒNƒeƒBƒuƒV[ƒg‚ğŠù‘¶ƒƒWƒbƒN‚Åíœ
+    ' ã¾ãšã‚¢ã‚¯ãƒ†ã‚£ãƒ–ã‚·ãƒ¼ãƒˆã‚’æ—¢å­˜ãƒ­ã‚¸ãƒƒã‚¯ã§å‰Šé™¤
     DeleteAllBracesAndLabels_ActiveSheet
 
-    ' ƒ~ƒ‰[æ‚É‚à“¯“™‚Ìíœ‚ğ“K—p
+    ' ãƒŸãƒ©ãƒ¼å…ˆã«ã‚‚åŒç­‰ã®å‰Šé™¤ã‚’é©ç”¨
     If MIRROR_ENABLED Then
         Set list = MirrorSheetList()
         For Each w In list
-            ' }Œ`‚Í•K‚¸íœ
+            ' å›³å½¢ã¯å¿…ãšå‰Šé™¤
             DeleteAllBraceShapes w
-            ' ƒ~ƒ‰[æ‚ÌƒZƒ‹’Ç‹L‚àÁ‚µ‚½‚¢ê‡‚Ì‚İÀ{
+            ' ãƒŸãƒ©ãƒ¼å…ˆã®ã‚»ãƒ«è¿½è¨˜ã‚‚æ¶ˆã—ãŸã„å ´åˆã®ã¿å®Ÿæ–½
             If MIRROR_WRITE_LABELS Then
                 StripAppendedLabelsOnSheet w
             End If
@@ -714,29 +714,29 @@ Public Sub DeleteAllBracesAndLabels_WithMirror()
 End Sub
 
 '========================
-' ƒ~ƒ‰[æ‚àŠÜ‚ß‚Ä‘I‘ğ”ÍˆÍ‚Ì‚İíœ
+' ãƒŸãƒ©ãƒ¼å…ˆã‚‚å«ã‚ã¦é¸æŠç¯„å›²ã®ã¿å‰Šé™¤
 '========================
 Public Sub DeleteBracesAndLabels_SelectedRange_WithMirror()
     Dim ws As Worksheet: Set ws = ActiveSheet
     Dim list As Collection, w As Worksheet, rng As Range, rngT As Range
 
     If TypeName(Selection) <> "Range" Or Selection.Areas.Count > 1 Then
-        MsgBox "˜A‘±‚µ‚½ƒZƒ‹”ÍˆÍ‚ğ1‚Â‘I‘ğ‚µ‚Ä‚©‚çÀs‚µ‚Ä‚­‚¾‚³‚¢B", vbExclamation
+        MsgBox "é€£ç¶šã—ãŸã‚»ãƒ«ç¯„å›²ã‚’1ã¤é¸æŠã—ã¦ã‹ã‚‰å®Ÿè¡Œã—ã¦ãã ã•ã„ã€‚", vbExclamation
         Exit Sub
     End If
     Set rng = Selection
 
-    ' ‚Ü‚¸ƒAƒNƒeƒBƒuƒV[ƒg‚Ì‘I‘ğ”ÍˆÍ‚¾‚¯íœ
+    ' ã¾ãšã‚¢ã‚¯ãƒ†ã‚£ãƒ–ã‚·ãƒ¼ãƒˆã®é¸æŠç¯„å›²ã ã‘å‰Šé™¤
     DeleteBracesAndLabels_SelectedRange
 
-    ' ƒ~ƒ‰[æF“¯‚¶s~—ñ‚Ì‹éŒ`‚¾‚¯‚É‘Î‚µ‚Äíœ
+    ' ãƒŸãƒ©ãƒ¼å…ˆï¼šåŒã˜è¡ŒÃ—åˆ—ã®çŸ©å½¢ã ã‘ã«å¯¾ã—ã¦å‰Šé™¤
     If MIRROR_ENABLED Then
         Set list = MirrorSheetList()
         For Each w In list
             Set rngT = BuildSameRectRange(w, rng)
-            ' }Œ`F‹éŒ`‚ÉŒğ·‚·‚é“–ƒ}ƒNƒ‚ÌŠ‡ŒÊ‚¾‚¯‚ğíœ
+            ' å›³å½¢ï¼šçŸ©å½¢ã«äº¤å·®ã™ã‚‹å½“ãƒã‚¯ãƒ­ã®æ‹¬å¼§ã ã‘ã‚’å‰Šé™¤
             DeleteBraceShapesInRange w, rngT
-            ' ƒZƒ‹’Ç‹LF•K—v‚Ì‚İ
+            ' ã‚»ãƒ«è¿½è¨˜ï¼šå¿…è¦æ™‚ã®ã¿
             If MIRROR_WRITE_LABELS Then
                 StripAppendedLabelsInRange w, rngT
             End If
@@ -745,7 +745,7 @@ Public Sub DeleteBracesAndLabels_SelectedRange_WithMirror()
 End Sub
 
 '========================
-' }Œ`íœi‹éŒ`”ÍˆÍ‚ÉŒğ·‚·‚é“–ƒ}ƒNƒ‚ÌŠ‡ŒÊ‚Ì‚İj
+' å›³å½¢å‰Šé™¤ï¼ˆçŸ©å½¢ç¯„å›²ã«äº¤å·®ã™ã‚‹å½“ãƒã‚¯ãƒ­ã®æ‹¬å¼§ã®ã¿ï¼‰
 '========================
 Private Sub DeleteBraceShapesInRange(ByVal ws As Worksheet, ByVal rng As Range)
     Dim i As Long, sh As Shape
@@ -759,7 +759,7 @@ Private Sub DeleteBraceShapesInRange(ByVal ws As Worksheet, ByVal rng As Range)
     Next i
 End Sub
 
-' }Œ`‚ÌŠOÚ‹éŒ`‚Æ”ÍˆÍ‚ÌŠOÚ‹éŒ`‚ªŒğ·‚·‚é‚©
+' å›³å½¢ã®å¤–æ¥çŸ©å½¢ã¨ç¯„å›²ã®å¤–æ¥çŸ©å½¢ãŒäº¤å·®ã™ã‚‹ã‹
 Private Function ShapeIntersectsRange(ByVal sh As Shape, ByVal rng As Range) As Boolean
     Dim sL As Double, sT As Double, sR As Double, sB As Double
     Dim rL As Double, rT As Double, rR As Double, rB As Double
@@ -769,7 +769,7 @@ Private Function ShapeIntersectsRange(ByVal sh As Shape, ByVal rng As Range) As 
 End Function
 
 '========================
-' ƒZƒ‹’Ç‹L‚Ì”‚ª‚µi‘I‘ğ‹éŒ`‚¾‚¯j
+' ã‚»ãƒ«è¿½è¨˜ã®å‰¥ãŒã—ï¼ˆé¸æŠçŸ©å½¢ã ã‘ï¼‰
 '========================
 Private Sub StripAppendedLabelsInRange(ByVal ws As Worksheet, ByVal rng As Range)
     Dim ur As Range, r As Range
@@ -791,7 +791,7 @@ Private Sub StripAppendedLabelsInRange(ByVal ws As Worksheet, ByVal rng As Range
     On Error GoTo 0
 End Sub
 
-' “¯‚¶g—ñh‚Ì‚İ‡‚í‚¹As‚Í”CˆÓ‚ÌŠJn`I—¹‚Å‹éŒ`‚ğì¬
+' åŒã˜â€œåˆ—â€ã®ã¿åˆã‚ã›ã€è¡Œã¯ä»»æ„ã®é–‹å§‹ï½çµ‚äº†ã§çŸ©å½¢ã‚’ä½œæˆ
 Private Function BuildSameColumnsRangeByRows(ByVal ws As Worksheet, ByVal src As Range, _
                                              ByVal rowStart As Long, ByVal rowEnd As Long) As Range
     Dim c1 As Long, c2 As Long
@@ -800,7 +800,7 @@ Private Function BuildSameColumnsRangeByRows(ByVal ws As Worksheet, ByVal src As
     Set BuildSameColumnsRangeByRows = ws.Range(ws.Cells(rowStart, c1), ws.Cells(rowEnd, c2))
 End Function
 
-' Œ³‚Ì‘I‘ğ”ÍˆÍ‚Æ“¯‚¶u—ñv‚ğAw’ès‚É•~‚«’¼‚µ‚½‹éŒ`‚ğ•Ô‚·
+' å…ƒã®é¸æŠç¯„å›²ã¨åŒã˜ã€Œåˆ—ã€ã‚’ã€æŒ‡å®šè¡Œã«æ•·ãç›´ã—ãŸçŸ©å½¢ã‚’è¿”ã™
 Private Function BuildSameColumnsAtRows(ByVal ws As Worksheet, ByVal src As Range, _
                                         ByVal rowStart As Long, ByVal rowEnd As Long) As Range
     Dim c1 As Long, c2 As Long
@@ -809,7 +809,7 @@ Private Function BuildSameColumnsAtRows(ByVal ws As Worksheet, ByVal src As Rang
     Set BuildSameColumnsAtRows = ws.Range(ws.Cells(rowStart, c1), ws.Cells(rowEnd, c2))
 End Function
 
-' Œ³‚Ì‘I‘ğ”ÍˆÍ‚Æ“¯‚¶u—ñv‚¾‚¯‚ğA•Ê‚Ìs”ÍˆÍ‚Åì‚é
+' å…ƒã®é¸æŠç¯„å›²ã¨åŒã˜ã€Œåˆ—ã€ã ã‘ã‚’ã€åˆ¥ã®è¡Œç¯„å›²ã§ä½œã‚‹
 Private Function BuildSameColumnsRange(ByVal ws As Worksheet, ByVal src As Range, _
                                        ByVal rowStart As Long, ByVal rowEnd As Long) As Range
     Dim c1 As Long, c2 As Long
@@ -818,7 +818,7 @@ Private Function BuildSameColumnsRange(ByVal ws As Worksheet, ByVal src As Range
     Set BuildSameColumnsRange = ws.Range(ws.Cells(rowStart, c1), ws.Cells(rowEnd, c2))
 End Function
 
-' Œ³‚Ì‘I‘ğ”ÍˆÍ‚Æ“¯‚¶u—ñv‚Æus”v‚ÅA”CˆÓ‚ÌŠî€s‚©‚çì‚é
+' å…ƒã®é¸æŠç¯„å›²ã¨åŒã˜ã€Œåˆ—ã€ã¨ã€Œè¡Œæ•°ã€ã§ã€ä»»æ„ã®åŸºæº–è¡Œã‹ã‚‰ä½œã‚‹
 Private Function BuildSameColumnsRangeByRowCount( _
     ByVal ws As Worksheet, ByVal src As Range, ByVal baseRow As Long) As Range
 
@@ -829,7 +829,7 @@ Private Function BuildSameColumnsRangeByRowCount( _
     r2 = baseRow + src.Rows.Count - 1
     Set BuildSameColumnsRangeByRowCount = ws.Range(ws.Cells(r1, c1), ws.Cells(r2, c2))
 End Function
-' 6`19 s‚Éd‚È‚éu‘I‘ğ‚Ìˆê•”v‚ğæ‚èo‚·
+' 6ï½19 è¡Œã«é‡ãªã‚‹ã€Œé¸æŠã®ä¸€éƒ¨ã€ã‚’å–ã‚Šå‡ºã™
 Private Function OverlapWithFixedBand(ByVal src As Range, _
                                       ByVal rowStart As Long, ByVal rowEnd As Long) As Range
     Dim ws As Worksheet: Set ws = src.Worksheet
@@ -838,16 +838,16 @@ Private Function OverlapWithFixedBand(ByVal src As Range, _
     Set OverlapWithFixedBand = Intersect(src, band)
 End Function
 
-' 6`19 ‚Éd‚È‚é•”•ª‚ğ +24 s‚µ‚Ä 30`43 ‚Éû‚ß‚½‹éŒ`‚ğ•Ô‚·i—ñ‚Í‚»‚Ì‚Ü‚Üj
+' 6ï½19 ã«é‡ãªã‚‹éƒ¨åˆ†ã‚’ +24 è¡Œã—ã¦ 30ï½43 ã«åã‚ãŸçŸ©å½¢ã‚’è¿”ã™ï¼ˆåˆ—ã¯ãã®ã¾ã¾ï¼‰
 Private Function MapBand6_19_To30_43(ByVal src As Range) As Range
     Dim cut As Range, ws As Worksheet
     Dim r1 As Long, r2 As Long, c1 As Long, c2 As Long
     
     Set ws = src.Worksheet
     Set cut = OverlapWithFixedBand(src, FIXMIR_SRC_ROW_START, FIXMIR_SRC_ROW_END)
-    If cut Is Nothing Then Exit Function  ' 6`19 ‚É‚©‚©‚Á‚Ä‚¢‚È‚¢
+    If cut Is Nothing Then Exit Function  ' 6ï½19 ã«ã‹ã‹ã£ã¦ã„ãªã„
     
-    ' Œ³‚Ì—ñ•‚Æd‚È‚ès”‚ğ‚»‚Ì‚Ü‚ÜAs‚¾‚¯ +24 ¨ 30`43 ‚ÉƒNƒŠƒbƒv
+    ' å…ƒã®åˆ—å¹…ã¨é‡ãªã‚Šè¡Œæ•°ã‚’ãã®ã¾ã¾ã€è¡Œã ã‘ +24 â†’ 30ï½43 ã«ã‚¯ãƒªãƒƒãƒ—
     c1 = cut.Columns(1).Column
     c2 = cut.Columns(cut.Columns.Count).Column
     r1 = cut.row + FIXMIR_ROW_OFFSET
@@ -855,7 +855,7 @@ Private Function MapBand6_19_To30_43(ByVal src As Range) As Range
     
     If r1 < FIXMIR_DST_ROW_START Then r1 = FIXMIR_DST_ROW_START
     If r2 > FIXMIR_DST_ROW_END Then r2 = FIXMIR_DST_ROW_END
-    If r2 < r1 Then Exit Function         ' ƒNƒŠƒbƒv‚ÅÁ–Å
+    If r2 < r1 Then Exit Function         ' ã‚¯ãƒªãƒƒãƒ—ã§æ¶ˆæ»…
     
     Set MapBand6_19_To30_43 = ws.Range(ws.Cells(r1, c1), ws.Cells(r2, c2))
 End Function
