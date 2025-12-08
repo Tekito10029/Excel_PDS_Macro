@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>製造票用マクロ 運用ガイド</title>
+  <style>
+    /* 画面表示用の基本スタイル */
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+      margin: 20px auto;
+      max-width: 800px; /* A4縦を意識して横幅をやや狭めに */
+      background: #f3f4f6;
+      font-size: 14px;
+    }
+    h1 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .page-header {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      border: 1px solid #e5e7eb;
+    }
+    .small-note {
+      font-size: 0.9em;
+      color: #555;
+      margin-top: 0.2rem;
+    }
+
+    .section {
+      margin-bottom: 16px;
+      page-break-inside: avoid;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 12px 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      border: 1px solid #e5e7eb;
+      margin-bottom: 10px;
+    }
+    .card-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      gap: 8px;
+    }
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+    .card-tag {
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      white-space: nowrap;
+    }
+    .card-body {
+      font-size: 0.95rem;
+    }
+
+    h2, h3, h4 {
+      margin: 0;
+      padding: 0;
+      border: none;
+    }
+
+    code {
+      font-family: "Consolas", "Menlo", "Monaco", monospace;
+      background: #f3f4f6;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+    ol, ul {
+      margin-top: 0.4em;
+      padding-left: 1.4em;
+    }
+    li + li {
+      margin-top: 2px;
+    }
+    .step-label {
+      display: inline-block;
+      font-size: 0.8rem;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      margin-right: 4px;
+    }
+    .tip {
+      font-size: 0.85rem;
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: #ecfdf5;
+      border: 1px solid #bbf7d0;
+      margin-top: 6px;
+    }
+    .warning {
+      font-size: 0.85rem;
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      margin-top: 6px;
+    }
+    .kbd {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: #e5e7eb;
+      border: 1px solid #d1d5db;
+      font-size: 0.8rem;
+      font-family: inherit;
+    }
+
+    /* 動作フローを横並び＋自動折り返しで表現（スクロールなし） */
+    .flow-container {
+      margin-top: 8px;
+    }
+    .flow-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;          /* 折り返しを許可 */
+      gap: 6px;
+      padding: 4px 0;
+    }
+    .flow-node {
+      min-width: 120px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+      text-align: center;
+      font-size: 0.9rem;
+      box-sizing: border-box;
+      flex: 0 1 auto;           /* 横幅が足りなければ折り返す */
+    }
+    .flow-arrow {
+      font-size: 1.2rem;
+      flex: 0 0 auto;
+    }
+
+    /* 印刷用設定（A4縦） */
+    @page {
+      size: A4 portrait;
+      margin: 15mm;
+    }
+    @media print {
+      body {
+        background: #ffffff;
+        margin: 0;
+        max-width: none;
+        font-size: 11pt;
+      }
+      .page-header,
+      .card {
+        box-shadow: none;
+        border-radius: 6px;
+        border-color: #cccccc;
+      }
+      .card {
+        page-break-inside: avoid;
+      }
+      .card-tag {
+        background: #ffffff;
+        border-color: #cccccc;
+        color: #333333;
+      }
+      .tip,
+      .warning {
+        border-style: solid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>製造票用マクロ 運用ガイド</h1>
+  <p class="small-note">
+    対象：<code>Module1_V2.5.bas</code> / <code>Sheet3_V2.5.cls</code> / <code>Module2_V2.5.bas</code><br>
+    このガイドは「現場で使う人向け」の手順書です。プログラムの知識は不要です。<br>最終更新：2025/11/26
+  </p>
+</div>
+
+<!-- 1. 全体の使い方イメージ ＋ 動作フロー -->
+<div class="section" id="overview">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">1. 全体の使い方イメージと動作フロー</div>
+      <span class="card-tag">概要</span>
+    </div>
+    <div class="card-body">
+
+      <!-- 1-1. 役割 -->
+      <h3>1-1. マクロの役割</h3>
+      <p><span class="step-label">役割</span>このブックのマクロは、主に次の 3 つのことを自動化します。</p>
+      <ol>
+        <li><strong>Sheet3：コード変換＋装飾</strong><br>
+          G～J列に品名を入力すると、D列の上段と下段に対応するコードが自動で入り、さらに製品寸法の単位などの「装飾」が自動で付きます。</li>
+        <li><strong>Module2：括弧＋ラベルの図形</strong><br>
+          選択した行をまとめる「左中括弧」と、その説明ラベルを図形で一括作成／削除できます。別シートへのミラーも可能です。</li>
+        <li><strong>Module1：マスタ更新とトラブル復旧</strong><br>
+          外部マスタを読み込み直したり、イベントが止まったときの復旧（<code>Fix_EnableEvents</code>）を行います。</li>
+      </ol>
+
+      <!-- 1-2. 全体動作フロー（横並び＋折り返し） -->
+      <div class="card" style="margin-top:8px;">
+        <div class="card-header">
+          <div class="card-title" style="font-size:1rem;">1-2. 動作フロー（全体）</div>
+        </div>
+        <div class="card-body">
+          <p>日常運用の大まかな流れは次のとおりです。</p>
+          <div class="flow-container">
+            <div class="flow-row">
+              <div class="flow-node">① ブックを開く</div>
+              <span class="flow-arrow">→</span>
+              <div class="flow-node">② マスタ更新<br><span style="font-size:0.8rem;">（必要時のみ）</span></div>
+              <span class="flow-arrow">→</span>
+              <div class="flow-node">③ Sheet3 に入力</div>
+              <span class="flow-arrow">→</span>
+              <div class="flow-node">④ 自動変換＋装飾</div>
+              <span class="flow-arrow">→</span>
+              <div class="flow-node">⑤ 括弧＋ラベル作成<br><span style="font-size:0.8rem;">（必要な行に）</span></div>
+              <span class="flow-arrow">→</span>
+              <div class="flow-node">⑥ 印刷・出力</div>
+            </div>
+          </div>
+          <p class="tip"><strong>ポイント：</strong>通常は ③～⑥ のループです。②（マスタ更新）は、マスタ変更時だけ実施すればOKです。</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 2. 初期設定・マスタ更新 -->
+<div class="section" id="setup">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">2. 初期設定・マスタ更新（担当者向け）</div>
+      <span class="card-tag">事前準備</span>
+    </div>
+    <div class="card-body">
+
+      <div class="card" style="margin-top:6px;">
+        <div class="card-header">
+          <div class="card-title" style="font-size:1rem;">2-1. マスタファイルの場所</div>
+        </div>
+        <div class="card-body">
+          <ul>
+            <li>装飾ルールマスタ："製造\0⃣.沓\00.製造表 各社\DecorMaster.xlsx"※<code>DecorConfig</code> 用の外部ブック。</li>
+            <li>参照マスタ（沓用コード表）："製造\0⃣.沓\00.製造表 各社\沓用コード表.xlsx"<code>RefCache</code> 用の外部ブック。</li>
+          </ul>
+          <p>初回だけ、マクロ実行時にファイル選択画面で場所を指定します。2 回目以降は自動で同じ場所を参照します。</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:8px;">
+        <div class="card-header">
+          <div class="card-title" style="font-size:1rem;">2-2. 装飾ルール（DecorConfig）の更新手順</div>
+        </div>
+        <div class="card-body">
+          <ol>
+            <li>このブックを開きます。</li>
+            <li>シートに配置されている装飾リスト更新のボタンを押します。
+              <br>※もしくはExcel のメニューから <strong>開発タブ → マクロ</strong> を開きます。（ショートカット：<span class="kbd">Alt</span> + <span class="kbd">F8</span>）<br>その後マクロ一覧から <code>UpdateDecorConfigFromFile</code> を選び、「実行(R)」を押します。
+            <li>初回のみ、装飾マスタのファイルを選択します。</li>
+            <li>「装飾ルール(DecorConfig)を更新しました。」というメッセージが出たら完了です。</li>
+          </ol>
+          <p class="tip"><strong>タイミング：</strong>装飾ルールを変更・追加したとき（例：新しい注意書きルールを入れたとき）に実行してください。</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:8px;">
+        <div class="card-header">
+          <div class="card-title" style="font-size:1rem;">2-3. 参照マスタキャッシュ（RefCache）の更新手順</div>
+        </div>
+        <div class="card-body">
+          <ol>
+            <li>シートに配置されているコードリスト更新のボタンを押します。
+              <br>※もしくは<span class="kbd">Alt</span> + <span class="kbd">F8</span> でマクロ一覧を開きます。<br>その後<code>UpdateRefCacheFromRefFile</code> を選び、「実行」をクリックします。</li>
+            <li>初回のみ、参照マスタ（沓用コード表）のファイルを選択します。</li>
+            <li>処理が終わると、ブック内の <code>RefCache</code> シートに最新のマスタがコピーされます（シートは非表示のまま）。</li>
+          </ol>
+          <p class="tip"><strong>タイミング：</strong>沓用コード表に新しい品番が追加されたとき、名称が変わったときなどに実行してください。</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:8px;">
+        <div class="card-header">
+          <div class="card-title" style="font-size:1rem;">2-4. まとめて更新する場合</div>
+        </div>
+        <div class="card-body">
+          <ol>
+            <li>シートに配置されているコードリスト更新のボタンを押します。
+              <br>※もしくは<span class="kbd">Alt</span> + <span class="kbd">F8</span> でマクロ一覧を開きます。<br>その後<code>UpdateAllMasterCaches</code> を選び、「実行」をクリックします。</li>
+            <li>装飾ルールと参照マスタを、続けて両方更新します。</li>
+          </ol>
+          <p class="tip">ブックを配布する前や、マスタをまとめて変更した後は、このマクロを使うと便利です。</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 3. Sheet3 日常操作 -->
+<div class="section" id="sheet3-operation">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">3. Sheet3 の使い方（コード変換＋装飾）</div>
+      <span class="card-tag">日常作業</span>
+    </div>
+    <div class="card-body">
+
+      <div class="card" style="margin-top:6px;">
+        <div class="card-header">
+          <div class="card-title" style="font-size:1rem;">3-1. 入力する範囲</div>
+        </div>
+        <div class="card-body">
+          <ul>
+            <li>Sheet3 の <strong>6～19 行</strong>が対象です。</li>
+            <li>2 行で 1 セット（例：6 行目＝上段・7 行目＝下段）という単位で動きます。</li>
+            <li><strong>G～J列（右側）</strong>：製品名を入力します。その後下段には寸法の単位などの装飾が付きます。</li>
+            <li><strong>D列（左側）</strong>：製品名から自動で検索結果が入り、コードの上2桁を上段に、下3桁を下段に入力します。</li>
+          </ul>
+          <p class="warning"><strong>注意：</strong>6～19 行以外で入力しても、このマクロは動きません。</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:8px;">
+        <div class="card-header">
+          <div class="card-title" style="font-size:1rem;">3-2. 右から左への変換</div>
+        </div>
+        <div class="card-body">
+          <ol>
+            <li>G～J列の上段（例：6 行目）に、変換元となる文字列を入力します。（結合セルの場合は代表セルに入力します）</li>
+            <li>入力確定後、自動で左側 D列 上段／下段にコードが分解されて表示されます。</li>
+            <li>マスタに無い場合：
+              <ul>
+                <li>D列の上段に <code>62</code>、下段に <code>018</code> など、あらかじめ決められた「未対応コード」が入ります。</li>
+              </ul>
+            </li>
+          </ol>
+          <p class="warning"><strong>注意：</strong>右側の下段だけを変更しても変換は行われません。必ず「上段（例：6行目）」を編集してください。</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:8px;">
+        <div class="card-header">
+          <div class="card-title" style="font-size:1rem;">3-3. 装飾のイメージ</div>
+        </div>
+        <div class="card-body">
+          <ul>
+            <li>装飾は、主に右側の下段セルに表示されます。</li>
+            <li>内容は <code>DecorConfig</code> シートで定義されています。
+              <ul>
+                <li>特定の文字・記号が含まれているときに寸法に「φ」や「w」といった文言を自動で付けることができます。</li>
+                <li>一部のルールは「除外」指定があり、その場合は装飾を付けないようになっています。</li>
+              </ul>
+            </li>
+          </ul>
+          <p class="tip"><strong>装飾がおかしいと感じたら：</strong><br>
+          装飾ルールが格納されている <code>DecorConfig</code> シートか、マスタ自体の設定を確認してください。ルール追加後は <code>UpdateDecorConfigFromFile</code> の再実行も必要です。</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 4. 括弧＋ラベルの使い方 -->
+<div class="section" id="brace-operation">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">4. 括弧＋ラベル図形の使い方（Module2）</div>
+      <span class="card-tag">ラベル図形</span>
+    </div>
+    <div class="card-body">
+
+      <div class="card" style="margin-top:8px;">
+        <div class="card-header">
+          <div class="card-title" style="font-size:1rem;">4-1. 括弧・ラベルの作成。その後他シートにもコピー（ミラー）</div>
+        </div>
+        <div class="card-body">
+          <ol>
+            <li>括弧でまとめたい行を、列方向まで含めて選択します。
+            <br>（例：行 6～10 の A～F 列をドラッグして選択）</li>
+            <li>シートに配置されているラベル作成のボタンを押します。
+              <br>※もしくは<span class="kbd">Alt</span> + <span class="kbd">F8</span> でマクロ一覧を開きます。その後<code>DrawLeftBrace_Label_One_WithMirror</code> を選び、「実行」をクリックします。</li>
+            <li>ラベル文字列の入力ボックスが表示されるので、説明文（例：「○○工程」）を入力して OK を押します。</li>
+            <li>選択範囲の左側に「左中括弧」と、その左側にラベルが表示されます。</li>
+            <p class="tip"><strong>メモ：</strong>ラベル文字列はセルにも保存されます。区切り文字（<code>-</code> / <code>,</code> など）付きで追記されるため、あとから一覧のように確認できます。</p>
+            <li>設定されているミラー先シート（例：「製造票 ③ (現場用)」など）にも、同じ位置・同じラベルの括弧が自動で作成されます。</li>
+            <li>同じシートの 30～43 行側にも、同じレイアウトで括弧＋ラベルがコピーされます（設定で有効になっている場合）。</li>
+          </ol>
+          <p class="tip">ミラー先のシート名はマクロ内の設定で管理されています。運用ルールの変更（ミラー先の追加など）が必要な場合は、担当者に相談してください。</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:8px;">
+        <div class="card-header">
+          <div class="card-title" style="font-size:1rem;">4-2. 括弧とラベルを削除する</div>
+        </div>
+        <div class="card-body">
+          <h4>シート全体の括弧＋ラベルを消す</h4>
+          <ol>
+            <li>対象シートをアクティブにします。</li>
+            <li>マクロ一覧から <code>DeleteAllBracesAndLabels_ActiveSheet</code> を実行します。</li>
+            <li>そのシート上の括弧図形と、関連するセルラベルがすべて削除されます。</li>
+          </ol>
+
+          <h4>ミラー分もまとめて削除する</h4>
+          <ul>
+            <li>全シート対象：<code>DeleteAllBracesAndLabels_WithMirror</code></li>
+            <li>選択範囲のみ対象：<code>DeleteBracesAndLabels_SelectedRange_WithMirror</code></li>
+          </ul>
+
+          <p class="warning"><strong>注意：</strong>削除マクロは元に戻す（Ctrl+Z）が効きにくい場合があります。念のため、重要なシートはバックアップを取っておくと安心です。</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:8px;">
+        <div class="card-header">
+          <div class="card-title" style="font-size:1rem;">4-3. =TEXT(K4,"d") を書き込む補助マクロ</div>
+        </div>
+        <div class="card-body">
+          <ul>
+            <li><code>Write_TEXT_K4_dd_ToTarget</code>：指定セルに <code>=TEXT(K4,"d")</code> を書き込みます。</li>
+            <li><code>DeleteAllBracesAndLabels_AndWriteTEXTdd</code>：シート上の括弧＋ラベルを全削除したあと、同じく <code>=TEXT(K4,"d")</code> を書き込みます。</li>
+            <li><code>DeleteBracesAndLabels_SelectedRange_AndWriteTEXTdd</code>：選択範囲だけ削除したあとに、式を書き込みます。</li>
+          </ul>
+          <p>どのセルに書き込むかは、マクロ内の <code>TARGET_NAMED_RANGE</code> や <code>TARGET_CELL_ADDR</code> の設定によって決まります。</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 5. トラブルシューティング -->
+<div class="section" id="troubleshooting">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">5. トラブルシューティング</div>
+      <span class="card-tag">困ったとき</span>
+    </div>
+    <div class="card-body">
+
+      <div class="card" style="margin-top:6px;">
+        <div class="card-header">
+          <div class="card-title" style="font-size:1rem;">5-1. 自動変換が動かない場合</div>
+        </div>
+        <div class="card-body">
+          <ol>
+            <li>入力している行が <strong>6～19 行</strong> か確認します。</li>
+            <li>D列の <strong>上段行</strong> に入力しているか確認します。</li>
+            <li>Excel のメッセージバーに「マクロが無効」などの表示がないか確認します。</li>
+            <li>それでも動かない場合：
+              <ul>
+                <li>担当者に <code>Fix_EnableEvents</code> マクロを実行してもらってください。</li>
+              </ul>
+            </li>
+          </ol>
+          <p class="tip"><strong>イベントが無効になっている場合：</strong><br>
+          他のマクロの途中エラーなどで <code>Application.EnableEvents</code> が False のままになることがあります。その復旧専用が <code>Fix_EnableEvents</code> です。</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:8px;">
+        <div class="card-header">
+          <div class="card-title" style="font-size:1rem;">5-2. 「RefCacheがありません」と表示される</div>
+        </div>
+        <div class="card-body">
+          <ol>
+            <li>担当者に、<code>UpdateRefCacheFromRefFile</code> を実行してもらってください。</li>
+            <li>参照マスタファイルの場所が変わった場合は、再度ファイル選択画面で正しいファイルを選択します。</li>
+            <li>更新後に Sheet3 で再度入力して、変換されるか確認します。</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:8px;">
+        <div class="card-header">
+          <div class="card-title" style="font-size:1rem;">5-3. 装飾が期待どおりに付かない</div>
+        </div>
+        <div class="card-body">
+          <ol>
+            <li>最近 <code>DecorConfig</code> マスタを変更していないか確認します。</li>
+            <li>変更した場合は <code>UpdateDecorConfigFromFile</code> を実行して、ルールを再読み込みしてください。</li>
+            <li>それでもおかしい場合は、<code>DecorConfig</code> の該当行（ルール）を確認し、文字列やオプションに誤りがないかをチェックします。</li>
+          </ol>
+          <p class="tip">より詳しく確認したい場合は、開発者用マクロ <code>TraceDecorAtRow_Active</code> で、どのルールがヒットしているかを見ることもできます。（通常ユーザーは不要です）</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 6. 運用ルールのおすすめ -->
+<div class="section" id="policy">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">6. 運用ルールのおすすめ</div>
+      <span class="card-tag">運用ルール</span>
+    </div>
+    <div class="card-body">
+      <ul>
+        <li><strong>権限分け</strong>：
+          <ul>
+            <li>一般ユーザー：Sheet3 への入力、括弧ラベル（Module2）の実行のみ。</li>
+            <li>担当者：マスタ更新（<code>Update～</code> 系）と復旧（<code>Fix_EnableEvents</code>）。</li>
+          </ul>
+        </li>
+        <li><strong>定期メンテナンス</strong>：
+          <ul>
+            <li>月 1 回程度、マスタファイルが最新か確認し、<code>UpdateAllMasterCaches</code> を実行。</li>
+          </ul>
+        </li>
+        <li><strong>バックアップ</strong>：
+          <ul>
+            <li>括弧ラベルの大量削除やマスタの大幅変更前には、ブックをコピーしてバックアップを取る。</li>
+          </ul>
+        </li>
+      </ul>
+      <p class="tip">この運用ガイドを印刷してファイルに綴じる場合は、「仕様書」とセットで保管しておくと、トラブル時の調査がスムーズになります。</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

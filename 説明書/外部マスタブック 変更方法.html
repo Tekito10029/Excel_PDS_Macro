@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>外部マスタブック 変更方法 図解付き説明</title>
+  <style>
+    body {
+      font-family: "Meiryo", "Yu Gothic", sans-serif;
+      line-height: 1.6;
+      margin: 24px;
+    }
+    h1, h2, h3 {
+      margin-top: 1.2em;
+    }
+    figure {
+      margin: 1em 0;
+      border: 1px solid #ccc;
+      padding: 8px;
+      background: #fafafa;
+    }
+    figure img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto 0.5em;
+    }
+    figcaption {
+      font-size: 0.9em;
+      color: #555;
+    }
+    .note-list {
+      margin-left: 1.5em;
+    }
+    .highlight {
+      font-weight: bold;
+      color: #c00;
+    }
+    .step {
+      border-left: 4px solid #0078d4;
+      padding-left: 8px;
+      margin: 0.5em 0 0.5em 0;
+    }
+    .box {
+      border: 1px solid #ccc;
+      padding: 8px;
+      margin: 0.5em 0;
+      background: #fffff8;
+    }
+  </style>
+</head>
+<body>
+
+<h1>外部マスタブック 変更方法</h1>
+
+<p>
+  これは、製造票のマクロで使用している
+  <span class="highlight">「沓用コード表ブック」</span> と
+  <span class="highlight">「DecorMaster（DecorConfigシート）」</span>
+  の中身を変更するときのポイントを説明したものです。
+</p>
+
+<hr>
+
+<!-- 1枚目：沓用コード一覧ブック -->
+<h2>1. 沓用コード表.xlsx（沓用コード表ブック）の変更方法</h2>
+
+<figure>
+  <!-- 画像ファイル名は、HTML と同じフォルダに配置して使ってください -->
+  <img src="沓用コード表.png" alt="製品コード一覧ブックの画面">
+  <figcaption>
+    図1：沓用コード表ブック（沓用コード.xlsx）の例。<br>
+    C列に製品コード、D列に製品名が並んでいます。
+  </figcaption>
+</figure>
+
+<div class="box">
+  <p class="step"><strong>① 列の役割</strong></p>
+  <ul class="note-list">
+    <li><span class="highlight">C列「製品コード」</span> … マクロが参照する数字のコードです。</li>
+    <li><span class="highlight">D列「製品名」</span> … 画面や帳票に表示される名称です。</li>
+    <li><span class="highlight">B列</span> … 「その他」「運賃」などの区分をメモするための列です（空でも動作に問題はありません）。</li>
+  </ul>
+</div>
+
+<div class="box">
+  <p class="step"><strong>② 新しい製品コードを追加する手順</strong></p>
+  <ol class="note-list">
+    <li>このブック（沓用コード.xlsx）を開く。</li>
+    <li>追加したい場所の近くで、行番号を右クリックして <strong>「行の挿入」</strong> か、
+        一番下の行の下に新しい行を1行用意する。</li>
+    <li>その行の
+      <ul>
+        <li>C列に <strong>新しい製品コード</strong>（数字）</li>
+        <li>D列に <strong>製品名</strong></li>
+      </ul>
+      を入力する。B列は必要に応じて区分名（その他／運賃など）を入れてもOK。
+    </li>
+    <li>形式を揃えたい場合は、既存の行を丸ごとコピーして貼り付けてから、
+        C列・D列だけ書き換えると安全です。</li>
+    <li>ブックを <strong>上書き保存</strong> する。</li>
+    <li>そのあと、「製造票」側のファイルで <strong>マスタ更新マクロ（リスト更新）</strong> を実行し、最新の一覧を取り込ませます。</li>
+  </ol>
+</div>
+
+<div class="box">
+  <p class="step"><strong>③ 既存の製品名・コードを修正するとき</strong></p>
+  <ol class="note-list">
+    <li>修正したい行を探し、C列（コード）または D列（製品名）のセルを直接書き換える。</li>
+    <li>コードを変えると過去データとの対応関係も変わるため、運用ルール上問題ないか確認してから行う。
+    <br>※一つのコードに複数の製品名がある場合は製品名ごとにスペースで区切るようにしてください。</li>
+    <li>保存後、製造票ブックで <strong>マスタ更新</strong> を行う。</li>
+  </ol>
+</div>
+
+<div class="box">
+  <p class="step"><strong>④ 使わなくなった製品を無くしたいとき</strong></p>
+  <ul class="note-list">
+    <li>完全に削除する場合：行番号を右クリック → <strong>「行の削除」</strong> → 保存 → 製造票側でマスタ更新。</li>
+  </ul>
+</div>
+
+<hr>
+
+<!-- 2枚目：DecorMaster DecorConfig -->
+<h2>2. DecorMaster.xlsx（DecorConfigシート）の変更方法</h2>
+
+<figure>
+  <img src="装飾リスト.png" alt="DecorConfigシートの画面">
+  <figcaption>
+    図2：DecorMaster.xlsx の「DecorConfig」シート。<br>
+    各行が「どんなキーワードのとき、どんな補足を付けるか」のルールになっています。
+  </figcaption>
+</figure>
+
+<div class="box">
+  <p class="step"><strong>① 主な列の意味</strong></p>
+  <ul class="note-list">
+    <li><span class="highlight">A列「検索文字（カンマ区切りで入力）」</span><br>
+      … 対象となるキーワードを「,」で区切って並べます。  
+      例：<code>ストッパー部品,シンボウ</code>
+    </li>
+    <li><span class="highlight">B列「前に付ける装飾」</span><br>
+      … 先頭に付けたい記号や文字（例：<code>φ</code>、<code>L=</code> など）。
+    </li>
+    <li><span class="highlight">C列「後に付ける装飾」</span><br>
+      … 後ろに付けたい記号や文字（例：<code>t</code>、<code>w</code> など）。
+    </li>
+    <li><span class="highlight">D〜G列</span><br>
+      … マクロの細かい動作設定です。基本的には「動いている既存行をコピーして使う」だけでOKです。</li>
+    <li><span class="highlight">H列「補足」</span><br>
+      … ルールの説明欄です。「前につけるグループ」「何も付けないグループ」など、ルールの意味をメモします。</li>
+  </ul>
+</div>
+
+<div class="box">
+  <p class="step"><strong>② 新しい装飾ルールを追加する例</strong></p>
+  <p>例：品名に「SB」という言葉が入っていたら、後ろに「w」と付けたい場合。</p>
+  <ol class="note-list">
+    <li>DecorMaster.xlsx を開き、「DecorConfig」シートを選ぶ。</li>
+    <li>動きが近い既存行（例：後ろに何か付けている行）を <strong>行ごとコピー</strong> し、表の一番下の行に貼り付ける。</li>
+    <li>貼り付けた行の
+      <ul>
+        <li>A列（検索文字）に <code>SB</code> と入力
+          （複数あるなら <code>SB,SB2</code> のように「,」区切りで列挙）。</li>
+        <li>B列 or C列に付けたい文字を入力  
+          → 「後ろに付けたい」なら C列に <code>w</code> と入れる。</li>
+        <li>H列に「SBに対して後ろにwと表示する」などの説明を書く。</li>
+      </ul>
+    </li>
+    <li>D〜G列はコピー元の値をそのまま使います。<br>※識別子の説明はシート「識別子一覧」に載っています</li>
+    <li>ブックを保存したあと、製造票側のファイルで <strong>DecorConfig 更新マクロ</strong>（または両方まとめて更新）を実行します。</li>
+  </ol>
+</div>
+
+<div class="box">
+  <p class="step"><strong>③ 既存の補足文だけを直したいとき</strong></p>
+  <ol class="note-list">
+    <li>DecorConfig シートで、A列の検索文字や H列の説明を手がかりに対象行を探す。</li>
+    <li>前に付く文字を変えたい場合は B列、後ろを変えたい場合は C列の内容を、そのまま書き換える。</li>
+    <li>必要なら H列の説明も合わせて更新する。</li>
+    <li>保存後、製造票側で DecorConfig 更新マクロを実行する。</li>
+  </ol>
+</div>
+
+<div class="box">
+  <p class="step"><strong>④ 使わなくなったルールを無効化したいとき</strong></p>
+  <ul class="note-list">
+    <li>行番号を右クリック →「行の削除」→ 保存 → 入荷明細側で DecorConfig 更新。</li>
+  </ul>
+</div>
+
+<hr>
+
+</body>
+</html>

@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>製造票用マクロ仕様書（Module1_V2.5 / Sheet3_V2.5 / Module2_V2.5）</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    /* ===============================
+       全体レイアウト（仕様書向け）
+       =============================== */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+      line-height: 1.7;
+      margin: 16px auto;
+      max-width: 900px;      /* A4縦を想定 */
+      background: #f3f4f6;
+      color: #111827;
+      font-size: 13px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    /* ===============================
+       ドキュメントヘッダ（タイトル＋メタ情報）
+       =============================== */
+    .doc-header {
+      background: #ffffff;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      padding: 12px 16px;
+      margin-bottom: 14px;
+    }
+
+    .doc-header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 16px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 6px;
+    }
+
+    .doc-header-title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .doc-header-title small {
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .doc-header-code {
+      font-size: 11px;
+      text-align: right;
+      color: #4b5563;
+    }
+
+    .doc-meta-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .doc-meta-table th,
+    .doc-meta-table td {
+      border: 1px solid #e5e7eb;
+      padding: 4px 6px;
+    }
+
+    .doc-meta-table th {
+      width: 120px;
+      background: #f9fafb;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .doc-meta-table td {
+      background: #ffffff;
+    }
+
+    /* ===============================
+       セクション見出し
+       =============================== */
+    .section {
+      margin-top: 14px;
+      margin-bottom: 10px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .section-no {
+      min-width: 28px;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: #2563eb;
+      border: 1px solid #bfdbfe;
+      border-radius: 999px;
+      background: #eff6ff;
+      padding: 1px 6px;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      border-left: 3px solid #4b5563;
+      padding-left: 8px;
+    }
+
+    /* ===============================
+       カード（項目ブロック）
+       =============================== */
+    .card {
+      background: #ffffff;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+      margin-bottom: 6px;
+    }
+
+    .card-header {
+      padding: 6px 10px;
+      border-bottom: 1px solid #e5e7eb;
+      background: #f9fafb;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .card-tag {
+      font-size: 10px;
+      padding: 1px 8px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      color: #4b5563;
+      white-space: nowrap;
+    }
+
+    .card-body {
+      padding: 6px 10px 8px;
+      font-size: 12.5px;
+    }
+
+    h2, h3, h4 {
+      margin: 0;
+      padding: 0;
+      border: none;
+      font-size: 13px;
+    }
+
+    ul, ol {
+      margin-top: 4px;
+      margin-bottom: 4px;
+      padding-left: 18px;
+    }
+
+    li + li {
+      margin-top: 2px;
+    }
+
+    /* ===============================
+       インライン表現・補足
+       =============================== */
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace;
+      font-size: 12px;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace;
+      background: #f3f4f6;
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+
+    pre {
+      background: #f3f4f6;
+      color: #111827;
+      padding: 6px 8px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 12px;
+      margin: 4px 0;
+      border: 1px solid #e5e7eb;
+    }
+
+    .tip {
+      font-size: 11px;
+      padding: 5px 8px;
+      border-radius: 4px;
+      background: #ecfdf5;
+      border: 1px solid #bbf7d0;
+      margin-top: 4px;
+    }
+
+    .warning {
+      font-size: 11px;
+      padding: 5px 8px;
+      border-radius: 4px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      margin-top: 4px;
+    }
+
+    .step-label {
+      display: inline-block;
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      margin-right: 4px;
+    }
+
+    /* ===============================
+       フロー図（横並び＋折り返し）
+       =============================== */
+    .flow-container {
+      margin-top: 4px;
+    }
+
+    .flow-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding: 2px 0;
+    }
+
+    .flow-node {
+      min-width: 120px;
+      padding: 4px 6px;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+      text-align: center;
+      font-size: 11.5px;
+      box-sizing: border-box;
+      flex: 0 1 auto;
+    }
+
+    .flow-arrow {
+      font-size: 13px;
+      flex: 0 0 auto;
+    }
+
+    /* ===============================
+       簡易仕様テーブル
+       =============================== */
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin: 2px 0 4px;
+    }
+
+    .spec-table th,
+    .spec-table td {
+      border: 1px solid #e5e7eb;
+      padding: 3px 6px;
+      vertical-align: top;
+    }
+
+    .spec-table th {
+      background: #f9fafb;
+      font-weight: 600;
+      white-space: nowrap;
+      width: 120px;
+    }
+
+    /* ===============================
+       印刷設定（A4縦）
+       =============================== */
+    @page {
+      size: A4 portrait;
+      margin: 15mm;
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+        margin: 0;
+        max-width: none;
+        font-size: 11pt;
+      }
+
+      .doc-header,
+      .card {
+        box-shadow: none;
+      }
+
+      .section,
+      .card {
+        page-break-inside: auto;
+        page-break-before: auto;
+        page-break-after: auto;
+      }
+
+      .tip,
+      .warning {
+        border-style: solid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 文書ヘッダ -->
+<div class="doc-header">
+  <div class="doc-header-top">
+    <div class="doc-header-title">
+      <small>仕様書</small>
+      <h1>製造票用マクロ仕様書</h1>
+    </div>
+    <div class="doc-header-code">
+      <div>文書番号：MFG-MACRO-001</div>
+      <div>版数：2.5</div>
+    </div>
+  </div>
+  <table class="doc-meta-table">
+    <tr>
+      <th>対象ブック</th>
+      <td>製造票管理ブック（製造票テンプレート）</td>
+    </tr>
+    <tr>
+      <th>対象モジュール</th>
+      <td>Module1_V2.5 / Sheet3_V2.5 / Module2_V2.5</td>
+    </tr>
+    <tr>
+      <th>作成日</th>
+      <td>2025-11-26</td>
+    </tr>
+    <tr>
+      <th>作成者</th>
+      <td>得居 勇太</td>
+    </tr>
+    <tr>
+      <th>概要</th>
+      <td>製造票ブックに実装されている自動変換・装飾・括弧ラベル機能の仕様を定義する。</td>
+    </tr>
+  </table>
+</div>
+
+<!-- 1. 全体概要 -->
+<div class="section" id="outline">
+  <div class="section-header">
+    <div class="section-no">1</div>
+    <div class="section-title">全体概要</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">1-1. 機能概要</div>
+      <span class="card-tag">機能一覧</span>
+    </div>
+    <div class="card-body">
+      <table class="spec-table">
+        <tr>
+          <th>名称</th>
+          <td>製造票用コード変換・装飾マクロ</td>
+        </tr>
+        <tr>
+          <th>目的</th>
+          <td>
+            製造票の左側・右側コードの変換、装飾文字列の自動付与、および括弧＋ラベル図形の描画を自動化し、作業ミス削減と入力効率向上を図る。
+          </td>
+        </tr>
+        <tr>
+          <th>構成</th>
+          <td>
+            <ul>
+              <li><strong>Module1：</strong>マスタ更新・診断・ユーティリティ。</li>
+              <li><strong>Sheet3：</strong>コード変換・装飾ロジック（Worksheet_Change イベント）。</li>
+              <li><strong>Module2：</strong>括弧＋ラベル図形／セルラベル管理・ミラー機能。</li>
+            </ul>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">1-2. 全体動作フロー</div>
+      <span class="card-tag">処理フロー</span>
+    </div>
+    <div class="card-body">
+      <div class="flow-container">
+        <div class="flow-row">
+          <div class="flow-node">① マスタ更新<br><span style="font-size:10px;">DecorConfig / RefCache</span></div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-node">② Sheet3でデータ入力<br><span style="font-size:10px;">D列 or G～J列</span></div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-node">③ 自動変換・装飾<br><span style="font-size:10px;">左⇔右・装飾</span></div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-node">④ 括弧＋ラベル付与<br><span style="font-size:10px;">Module2</span></div>
+          <span class="flow-arrow">→</span>
+          <div class="flow-node">⑤ ミラー／削除／TEXT(K4)</div>
+        </div>
+      </div>
+      <p class="tip">
+        実運用では、先にマスタを最新化し、その後は Sheet3 上の入力に応じて自動変換・装飾が行われます。括弧＋ラベル機能は必要な行に対して任意に実行します。
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- 2. シート・モジュール構成 -->
+<div class="section" id="structure">
+  <div class="section-header">
+    <div class="section-no">2</div>
+    <div class="section-title">シート・モジュール構成</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">2-1. シート構成</div>
+      <span class="card-tag">構成</span>
+    </div>
+    <div class="card-body">
+      <table class="spec-table">
+        <tr>
+          <th>Sheet3</th>
+          <td>
+            <ul>
+              <li>対象行：6～19 行（2 行 1 セット：偶数＝上段／奇数＝下段）。</li>
+              <li>左側 D列、右側 G～J列の変換・装飾を担当。</li>
+              <li><span class="mono">Worksheet_Change</span> イベントをトリガとする。</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <th>DecorConfig</th>
+          <td>
+            <ul>
+              <li>装飾ルール定義表。</li>
+              <li>列 A～G 使用。</li>
+              <li>外部マスタブックから <span class="mono">UpdateDecorConfigFromFile</span> で更新。</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <th>RefCache</th>
+          <td>
+            <ul>
+              <li>参照マスタ（沓用コード表）キャッシュ。</li>
+              <li>列 A～C 使用（A:3→4キー, B:4→3キー, C:タグ）。</li>
+              <li>通常は非表示（<span class="mono">xlSheetHidden</span>）。</li>
+            </ul>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">2-2. モジュール構成</div>
+      <span class="card-tag">Modules</span>
+    </div>
+    <div class="card-body">
+      <table class="spec-table">
+        <tr>
+          <th>Module1_V2.5</th>
+          <td>
+            <ul>
+              <li>外部マスタファイルのパス管理（名前定義）。</li>
+              <li><span class="mono">DecorConfig</span> シートの更新。</li>
+              <li><span class="mono">RefCache</span> の更新。</li>
+              <li>配列・パスユーティリティ群。</li>
+              <li>装飾ルール／キャッシュの診断マクロ。</li>
+              <li><span class="mono">Fix_EnableEvents</span> などの復旧ユーティリティ。</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <th>Sheet3_V2.5</th>
+          <td>
+            <ul>
+              <li><span class="mono">Worksheet_Change</span> による自動変換・装飾処理。</li>
+              <li><span class="mono">RefCache</span> から辞書構築（3→4 / 4→3）。</li>
+              <li>セルごとのルーティング（左→右／右→左）。</li>
+              <li>装飾ルール適用（<span class="mono">ApplyDecorations</span>）。</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <th>Module2_V2.5</th>
+          <td>
+            <ul>
+              <li>括弧＋ラベル図形の描画／削除。</li>
+              <li>ラベル文字列のセル追記／削除。</li>
+              <li>他シート・同一シート別エリアへのミラー出力。</li>
+              <li><span class="mono">=TEXT(K4,"d")</span> 自動入力補助。</li>
+            </ul>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 3. Module1 仕様 -->
+<div class="section" id="module1">
+  <div class="section-header">
+    <div class="section-no">3</div>
+    <div class="section-title">Module1 の仕様（マスタ更新／ユーティリティ）</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">3-1. 主な定数・パス設定</div>
+      <span class="card-tag">定義</span>
+    </div>
+    <div class="card-body">
+      <ul>
+        <li><strong>装飾マスタ関連</strong>
+          <ul>
+            <li><span class="mono">DECOR_CFG_PATH_NAME</span>：装飾マスタパス用の名前定義キー。</li>
+            <li><span class="mono">DECOR_CFG_DEFAULT</span>：装飾マスタ既定パス。</li>
+            <li><span class="mono">DECOR_CFG_SHEET</span>：装飾マスタ／運用ブック側シート名（通常 <span class="mono">"DecorConfig"</span>）。</li>
+          </ul>
+        </li>
+        <li><strong>参照マスタ関連</strong>
+          <ul>
+            <li><span class="mono">REF_CFG_PATH_NAME</span>：参照マスタパス用名前定義キー。</li>
+            <li><span class="mono">REF_CFG_DEFAULT</span>：参照マスタ既定パス。</li>
+            <li><span class="mono">REF_SOURCE_SHEET</span>：元マスタシート名（例：<span class="mono">"沓用コード"</span>）。</li>
+            <li><span class="mono">REF_CACHE_SHEET</span>：キャッシュシート名（<span class="mono">"RefCache"</span>）。</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">3-2. 主な処理</div>
+      <span class="card-tag">処理仕様</span>
+    </div>
+    <div class="card-body">
+      <h4>3-2-1. パス取得・保存</h4>
+      <ul>
+        <li><span class="mono">GetDecorCfgPath</span> / <span class="mono">GetRefCfgPath</span>
+          <ul>
+            <li>名前定義 → 既定パス → ファイルダイアログの順で有効なパスを決定する。</li>
+          </ul>
+        </li>
+        <li><span class="mono">SavePathToName</span> / <span class="mono">LoadPathFromName</span>
+          <ul>
+            <li>名前定義を利用したパス文字列の保存・取得を行う。</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h4>3-2-2. マスタ更新</h4>
+      <ul>
+        <li><span class="mono">UpdateDecorConfigFromFile</span>
+          <ul>
+            <li>装飾マスタブックを開き、シート <span class="mono">DecorConfig</span> の A1:G最終行を運用ブック側へ転記。</li>
+          </ul>
+        </li>
+        <li><span class="mono">UpdateRefCacheFromRefFile</span>
+          <ul>
+            <li>参照マスタ（沓用コード）を開き、C/D/E 列を <span class="mono">RefCache</span> に A/B/C としてキャッシュ。</li>
+          </ul>
+        </li>
+        <li><span class="mono">UpdateAllMasterCaches</span>
+          <ul>
+            <li>上記 2 つの更新処理を連続実行するラッパーマクロ。</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h4>3-2-3. 診断・復旧</h4>
+      <ul>
+        <li><span class="mono">DumpDecorRules</span> / <span class="mono">Debug_DecorRulesSummary</span>
+          <ul>
+            <li>装飾ルール内容や件数を Immediate ウィンドウに出力し確認する。</li>
+          </ul>
+        </li>
+        <li><span class="mono">TraceDecorAtRow_Active</span>
+          <ul>
+            <li>アクティブシートを対象に、指定行の装飾マッチ状況をトレースする。</li>
+          </ul>
+        </li>
+        <li><span class="mono">Fix_EnableEvents</span>
+          <ul>
+            <li><span class="mono">Application.EnableEvents</span> を True に戻し、計算モードなどを復旧する。</li>
+            <li>エラーが発生しても、必ずイベント有効状態で終了する。</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- 4. Sheet3 仕様 -->
+<div class="section" id="sheet3">
+  <div class="section-header">
+    <div class="section-no">4</div>
+    <div class="section-title">Sheet3 の仕様（自動変換・装飾）</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">4-1. 対象範囲・基本定義</div>
+      <span class="card-tag">対象</span>
+    </div>
+    <div class="card-body">
+      <table class="spec-table">
+        <tr>
+          <th>対象行</th>
+          <td>6 ～ 19 行（2 行 1 組）</td>
+        </tr>
+        <tr>
+          <th>左側列</th>
+          <td>D列（列番号 4）</td>
+        </tr>
+        <tr>
+          <th>右側列</th>
+          <td>G ～ J 列（列番号 7 ～ 10）</td>
+        </tr>
+        <tr>
+          <th>イベント</th>
+          <td><span class="mono">Worksheet_Change(ByVal Target As Range)</span></td>
+        </tr>
+        <tr>
+          <th>マスタ</th>
+          <td>
+            <ul>
+              <li>変換マスタ：<span class="mono">RefCache</span> シート（3→4／4→3 マップ）。</li>
+              <li>装飾マスタ：<span class="mono">DecorConfig</span> シート（A～G列）。</li>
+            </ul>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">4-2. Worksheet_Change 処理フロー</div>
+      <span class="card-tag">処理フロー</span>
+    </div>
+    <div class="card-body">
+      <pre><code>Private Sub Worksheet_Change(ByVal Target As Range)</code></pre>
+      <ol>
+        <li><span class="step-label">前処理</span>
+          <ul>
+            <li>エラーハンドリング設定（<code>CleanUp</code> ラベル）。</li>
+            <li><span class="mono">Application.EnableEvents = False</span> / <span class="mono">ScreenUpdating = False</span>。</li>
+          </ul>
+        </li>
+        <li><span class="step-label">マップ構築</span>
+          <ul>
+            <li><span class="mono">BuildMapsFromCache(map34, map43)</span> で <span class="mono">RefCache</span> から辞書を構築。</li>
+            <li>キャッシュが無い／空の場合は、初回のみ MsgBox 通知後処理中止。</li>
+          </ul>
+        </li>
+        <li><span class="step-label">セル単位処理</span>
+          <ul>
+            <li><span class="mono">Target.Areas</span> を展開し、各セルで <span class="mono">RouteOneCell</span> を実行。</li>
+          </ul>
+        </li>
+        <li><span class="step-label">後処理</span>
+          <ul>
+            <li><span class="mono">ScreenUpdating</span> / <span class="mono">EnableEvents</span> を必ず True に戻して終了。</li>
+          </ul>
+        </li>
+      </ol>
+      <p class="warning">
+        <strong>注意：</strong>イベント無効のまま終了してしまった場合は、Module1 の <span class="mono">Fix_EnableEvents</span> を手動実行して復旧します。
+      </p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">4-3. 右（G～J）→左（D列）変換</div>
+      <span class="card-tag">変換仕様</span>
+    </div>
+    <div class="card-body">
+      <ul>
+        <li>トリガ：G～J列（上段行）の値変更。</li>
+        <li>処理概要：
+          <ol>
+            <li>結合セルの代表セル（上段）を <span class="mono">GetRowMergeTopLeft</span> で取得。</li>
+            <li>値を正規化しキーを作成。</li>
+            <li>キーが空の場合：
+              <ul>
+                <li><span class="mono">WriteLeftSplit</span> で D列上段／下段をクリア。</li>
+                <li>装飾もクリア。</li>
+              </ul>
+            </li>
+            <li>キーあり：
+              <ul>
+                <li><span class="mono">Resolve_OR_WithKey</span> で <span class="mono">map43</span>（4→3）から候補検索。</li>
+                <li>ヒットなし：
+                  <ul>
+                    <li><span class="mono">WriteLeftFallback</span> により、上段へ <span class="mono">UNMATCHED_LEFT_UPPER</span>、下段へ <span class="mono">UNMATCHED_LEFT_LOWER</span> を設定。</li>
+                    <li>装飾はクリア。</li>
+                  </ul>
+                </li>
+                <li>ヒットあり：
+                  <ul>
+                    <li><span class="mono">WriteLeftSplit</span> で D列上段／下段へ変換値を分割書き込み。</li>
+                    <li><span class="mono">ApplyDecorations</span> で装飾を付与。</li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+          </ol>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">4-4. 装飾ルール適用（ApplyDecorations）</div>
+      <span class="card-tag">装飾仕様</span>
+    </div>
+    <div class="card-body">
+      <pre><code>Private Sub ApplyDecorations(ByVal topRow As Long, ByVal matchedKeyRaw As String)</code></pre>
+      <ul>
+        <li>対象セル：<br>
+          <span class="mono">topRow</span> に対応する 2 行セットの下段行・右側装飾セル。
+        </li>
+        <li>処理概要：
+          <ol>
+            <li>装飾対象文字列 <span class="mono">srcNorm</span> を組み立て（左・右・キーを連結・正規化）。</li>
+            <li><span class="mono">BuildDecorRules</span> で <span class="mono">DecorConfig</span> からルール一覧を取得。</li>
+            <li>既存装飾の処理：
+              <ul>
+                <li><span class="mono">DECOR_CLEAR_BELOW_FIRST = True</span> の場合は空文字から構築。</li>
+                <li>それ以外は <span class="mono">StripDecorations</span> で既存の before/after を除去。</li>
+              </ul>
+            </li>
+            <li>除外ルール（<span class="mono">exclude</span>）にマッチした場合：
+              <ul>
+                <li>既存装飾のみを削除し、新規装飾は付けず終了。</li>
+              </ul>
+            </li>
+            <li>専用ルール（<span class="mono">exclusive</span>）が存在する場合：
+              <ul>
+                <li>該当ルールのみを対象として評価。</li>
+              </ul>
+            </li>
+            <li>各ルールについて、before/after/text を評価し、重複しないよう <span class="mono">AppendUnique</span> で蓄積。</li>
+            <li>最終的に <span class="mono">[前装飾] + baseText + [後装飾]</span> をセルへ書き戻す。</li>
+          </ol>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- 5. Module2 仕様 -->
+<div class="section" id="module2">
+  <div class="section-header">
+    <div class="section-no">5</div>
+    <div class="section-title">Module2 の仕様（括弧ラベル・ミラー機能）</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">5-1. 主な定数</div>
+      <span class="card-tag">定義</span>
+    </div>
+    <div class="card-body">
+      <ul>
+        <li><strong>括弧・ラベル外観</strong>
+          <ul>
+            <li>線の太さ：<span class="mono">BRACE_WEIGHT_PTS</span></li>
+            <li>ラベル文字サイズ：<span class="mono">LABEL_FONT_SIZE</span></li>
+            <li>括弧幅：<span class="mono">BRACE_WIDTH</span></li>
+            <li>括弧とラベルの位置関係：<span class="mono">LABEL_X_OFFSET</span></li>
+          </ul>
+        </li>
+        <li><strong>ラベル書き込み先</strong>
+          <ul>
+            <li><span class="mono">WRITE_WHERE = 1</span>：名前付き範囲 → 固定セルの順で書き込み。</li>
+            <li><span class="mono">WRITE_WHERE = 2</span>：選択範囲左上セルに書き込み。</li>
+          </ul>
+        </li>
+        <li><strong>ミラー機能</strong>
+          <ul>
+            <li><span class="mono">MIRROR_ENABLED</span>：他シートへのミラー出力有無。</li>
+            <li><span class="mono">MIRROR_SHEETS</span>：ミラー先シート名の一覧。</li>
+            <li><span class="mono">LOCAL_MIRROR_ENABLED</span>：同一シート内（6～19 → 30～43）ミラー有無。</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">5-2. 主な公開マクロ</div>
+      <span class="card-tag">処理仕様</span>
+    </div>
+    <div class="card-body">
+      <h4>5-2-1. 括弧＋ラベル描画</h4>
+      <ul>
+        <li><span class="mono">DrawLeftBrace_Label_One</span>
+          <ul>
+            <li>選択範囲に 1 本の左中括弧とラベル図形を描画。</li>
+            <li>ラベル文字列は InputBox で入力（前回値を初期値として再利用）。</li>
+            <li><span class="mono">WriteLabelToCell</span> により、対象セルへ区切り付きで追記。</li>
+          </ul>
+        </li>
+        <li><span class="mono">DrawLeftBrace_Label_One_WithMirror</span>
+          <ul>
+            <li>上記に加え、ミラー設定に従い他シート・同一シート別エリアへも括弧＋ラベルを描画。</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h4>5-2-2. 図形・ラベル削除</h4>
+      <ul>
+        <li><span class="mono">DeleteAllBracesAndLabels_ActiveSheet</span>：アクティブシートの括弧図形・ラベルを全削除。</li>
+        <li><span class="mono">DeleteBracesAndLabels_SelectedRange</span>：選択範囲に紐づく括弧図形・ラベルのみ削除。</li>
+        <li><span class="mono">DeleteAllBracesAndLabels_WithMirror</span>：現在シート＋ミラー先シートの図形・ラベルを全削除。</li>
+        <li><span class="mono">DeleteBracesAndLabels_SelectedRange_WithMirror</span>：選択範囲と同じ矩形をミラー先にも作り、その範囲のみ削除。</li>
+      </ul>
+
+      <h4>5-2-3. =TEXT(K4,"d") 関連</h4>
+      <ul>
+        <li><span class="mono">Write_TEXT_K4_dd_ToTarget</span>：対象セルに <span class="mono">=TEXT(K4,"d")</span> を設定。</li>
+        <li><span class="mono">DeleteAllBracesAndLabels_AndWriteTEXTdd</span>：
+          <ul><li>図形・ラベル全削除後、<span class="mono">=TEXT(K4,"d")</span> を書き込む。</li></ul>
+        </li>
+        <li><span class="mono">DeleteBracesAndLabels_SelectedRange_AndWriteTEXTdd</span>：
+          <ul><li>選択範囲に対応する削除後、<span class="mono">=TEXT(K4,"d")</span> を書き込む。</li></ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- 6. 想定運用フロー -->
+<div class="section" id="flow">
+  <div class="section-header">
+    <div class="section-no">6</div>
+    <div class="section-title">想定運用フロー</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">6-1. 運用手順（概要）</div>
+      <span class="card-tag">運用</span>
+    </div>
+    <div class="card-body">
+      <ol>
+        <li><strong>初期設定・マスタ更新</strong>
+          <ul>
+            <li>Module1 の <span class="mono">UpdateDecorConfigFromFile</span> を実行して装飾ルールを更新。</li>
+            <li><span class="mono">UpdateRefCacheFromRefFile</span> を実行して参照マスタキャッシュを更新（または <span class="mono">UpdateAllMasterCaches</span>）。</li>
+          </ul>
+        </li>
+        <li><strong>Sheet3 でのデータ入力・自動変換</strong>
+          <ul>
+            <li>D列または G～J列上段にコードを入力する。</li>
+            <li>対応する左⇔右コードが自動変換され、必要に応じて装飾が付与される。</li>
+          </ul>
+        </li>
+        <li><strong>括弧＋ラベルの付与・確認</strong>
+          <ul>
+            <li>対象範囲を選択し、Module2 の括弧描画マクロを実行。</li>
+            <li>必要に応じてミラー機能で他シート・別エリアにも反映。</li>
+          </ul>
+        </li>
+        <li><strong>不要になったラベル／括弧の整理</strong>
+          <ul>
+            <li>削除系マクロを実行して、不要な図形・ラベルを一括または範囲指定で削除。</li>
+          </ul>
+        </li>
+        <li><strong>トラブル発生時</strong>
+          <ul>
+            <li>自動変換が動作しない場合：<span class="mono">RefCache</span> の更新状況と <span class="mono">EnableEvents</span> を確認。</li>
+            <li>イベント無効の疑いがある場合：<span class="mono">Fix_EnableEvents</span> を実行。</li>
+          </ul>
+        </li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
