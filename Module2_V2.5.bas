@@ -45,7 +45,6 @@ Private Const FIXMIR_ROW_OFFSET    As Long = (FIXMIR_DST_ROW_START - FIXMIR_SRC_
 Private Const FIXMIR_ENABLED       As Boolean = True          ' ← 有効/無効
 Private Const FIXMIR_WRITE_LABELS  As Boolean = False         ' ← ミラー先にセル追記もするなら True
 
-
 '========================
 ' 入力マクロ（任意ラベル）
 '========================
@@ -74,7 +73,6 @@ Public Sub DrawLeftBrace_Label_One()
     Call DrawLeftBraceWithLabelForSelection(labelTxt, rng)
     WriteLabelToCell rng.Worksheet, rng, labelTxt
 End Sub
-
 
 '―― コア：選択範囲に1本の左中括弧＋ラベルを描画 ――'
 Private Sub DrawLeftBraceWithLabelForSelection(ByVal labelTxt As String, ByVal rng As Range)
@@ -187,56 +185,29 @@ End Sub
 '    Loop
 'End Function
 
-
 '========================
 ' ★ 一括削除（このマクロが追加した図形＋セル追記のみ）
 '========================
 Public Sub DeleteAllBracesAndLabels_ActiveSheet()
     Dim ws As Worksheet: Set ws = ActiveSheet
-    DeleteAllBraceShapes ws           ' 図形（タグ/名前規則で判定）
-    If SCAN_WHOLE_SHEET Then
-        StripAppendedLabelsOnSheet ws ' セル（最初の区切りで判定）
-    Else
-        Dim tgt As Range
-        Set tgt = TryGetNamedRange(ws, TARGET_NAMED_RANGE)
-        If Not tgt Is Nothing Then StripAppendedLabelFromCell tgt
-        On Error Resume Next
-        Set tgt = ws.Range(TARGET_CELL_ADDR): On Error GoTo 0
-        If Not tgt Is Nothing Then StripAppendedLabelFromCell tgt
-        If TypeName(Selection) = "Range" Then StripAppendedLabelFromCell Selection.Cells(1, 1)
-    End If
+    DeleteAllBraceShapes ws                 ' 図形は従来どおり全削除
+    ' ★セル側は LabelTarget / 固定セル のみ
+    StripAppendedLabelsOnSheet ws
 End Sub
 
 '（任意）選択範囲のみ対象の削除
 Public Sub DeleteBracesAndLabels_SelectedRange()
-    Dim ws As Worksheet, ur As Range, r As Range
+    Dim ws As Worksheet, rng As Range
     If TypeName(Selection) <> "Range" Then Exit Sub
     Set ws = ActiveSheet
+    Set rng = Selection
 
-    ' 図形：選択縦範囲と重なる & タグ/名前規則一致のみ削除
-    Dim i As Long, sh As Shape, topSel As Single, bottomSel As Single
-    topSel = Selection.Top: bottomSel = Selection.Top + Selection.Height
-    For i = ws.Shapes.Count To 1 Step -1
-        Set sh = ws.Shapes(i)
-        If IsBraceShape(sh) Then
-            If Not (sh.Top + sh.Height < topSel Or sh.Top > bottomSel) Then
-                On Error Resume Next: sh.Delete: On Error GoTo 0
-            End If
-        End If
-    Next i
+    ' 図形（交差判定）はそのまま
+    DeleteBraceShapesInRange ws, rng
 
-    ' セル：選択範囲内のみ剥がす
-    On Error Resume Next: Set ur = Intersect(ws.UsedRange, Selection): On Error GoTo 0
-    If ur Is Nothing Then Exit Sub
-
-    On Error Resume Next
-    For Each r In ur.SpecialCells(xlCellTypeFormulas): StripAppendedLabelFromCell r: Next r
-    On Error GoTo 0
-    On Error Resume Next
-    For Each r In ur.SpecialCells(xlCellTypeConstants): StripAppendedLabelFromCell r: Next r
-    On Error GoTo 0
+    ' ★セル側は LabelTarget/固定セル ∩ 選択だけ
+    StripAppendedLabelsInRange ws, rng
 End Sub
-
 
 '―― 図形関連 ――'
 Public Sub EnablePrintingForBraceShapes_ActiveSheet()
@@ -349,23 +320,29 @@ Private Function ExtractOriginalFormulaSmart(ByVal f As String) As String
     End If
 End Function
 
-' シート全体を走査して、当マクロ由来（区切りで判定）の追記を剥がす
 Private Sub StripAppendedLabelsOnSheet(ByVal ws As Worksheet)
-    Dim ur As Range, r As Range
-    On Error Resume Next: Set ur = ws.UsedRange: On Error GoTo 0
-    If ur Is Nothing Then Exit Sub
+    Dim t As Range, r As Range, c As Range
+    Set t = GetTargetCells(ws)
+    If t Is Nothing Then Exit Sub
 
-    On Error Resume Next
-    For Each r In ur.SpecialCells(xlCellTypeFormulas)
-        StripAppendedLabelFromCell r
+    For Each r In t.Cells
+        Set c = r.MergeArea.Cells(1, 1)
+        StripAppendedLabelFromCell c
     Next r
-    On Error GoTo 0
+End Sub
 
-    On Error Resume Next
-    For Each r In ur.SpecialCells(xlCellTypeConstants)
-        StripAppendedLabelFromCell r
+Private Sub StripAppendedLabelsInRange(ByVal ws As Worksheet, ByVal rng As Range)
+    Dim t As Range, r As Range, c As Range
+    Dim x As Range
+    Set t = GetTargetCells(ws)
+    If t Is Nothing Then Exit Sub
+    On Error Resume Next: Set x = Intersect(t, rng): On Error GoTo 0
+    If x Is Nothing Then Exit Sub
+
+    For Each r In x.Cells
+        Set c = r.MergeArea.Cells(1, 1)
+        StripAppendedLabelFromCell c
     Next r
-    On Error GoTo 0
 End Sub
 
 
@@ -687,30 +664,34 @@ Public Sub MirrorLastSelectionToOtherSheets()
     Next
 End Sub
 
-
 '========================
 ' ミラー先も含めて一括削除（シート全体）
 '========================
-Public Sub DeleteAllBracesAndLabels_WithMirror()
+Public Sub DeleteAllBracesAndLabels_WithMirror_AndWriteTEXTdd()
     Dim ws As Worksheet: Set ws = ActiveSheet
     Dim list As Collection, w As Worksheet
 
-    ' まずアクティブシートを既存ロジックで削除
     DeleteAllBracesAndLabels_ActiveSheet
 
-    ' ミラー先にも同等の削除を適用
     If MIRROR_ENABLED Then
         Set list = MirrorSheetList()
         For Each w In list
-            ' 図形は必ず削除
             DeleteAllBraceShapes w
-            ' ミラー先のセル追記も消したい場合のみ実施
+            ' ★ミラー先のセル追記も、ターゲットがある場合のみ削除
             If MIRROR_WRITE_LABELS Then
                 StripAppendedLabelsOnSheet w
             End If
         Next
     End If
-     SetTargetToTEXTdd ws, ws.Range("A1")
+        If WRITE_WHERE = 2 Then
+        If TypeName(Selection) = "Range" Then
+            SetTargetToTEXTdd ws, Selection
+        Else
+            SetTargetToTEXTdd ws, ws.Range("A1")
+        End If
+    Else
+        SetTargetToTEXTdd ws, ws.Range("A1")
+    End If
 End Sub
 
 '========================
@@ -726,17 +707,17 @@ Public Sub DeleteBracesAndLabels_SelectedRange_WithMirror()
     End If
     Set rng = Selection
 
-    ' まずアクティブシートの選択範囲だけ削除
-    DeleteBracesAndLabels_SelectedRange
+    ' 自シート
+    DeleteBraceShapesInRange ws, rng
+    StripAppendedLabelsInRange ws, rng
 
-    ' ミラー先：同じ行×列の矩形だけに対して削除
+    ' ミラー先（同じ矩形 or 列で rngT を求める既存ロジックを使用）
     If MIRROR_ENABLED Then
         Set list = MirrorSheetList()
         For Each w In list
+            ' 例：同じ矩形ミラーを使っている場合
             Set rngT = BuildSameRectRange(w, rng)
-            ' 図形：矩形に交差する当マクロの括弧だけを削除
             DeleteBraceShapesInRange w, rngT
-            ' セル追記：必要時のみ
             If MIRROR_WRITE_LABELS Then
                 StripAppendedLabelsInRange w, rngT
             End If
@@ -767,29 +748,6 @@ Private Function ShapeIntersectsRange(ByVal sh As Shape, ByVal rng As Range) As 
     rL = rng.Left: rT = rng.Top: rR = rng.Left + rng.Width: rB = rng.Top + rng.Height
     ShapeIntersectsRange = Not (sR < rL Or sL > rR Or sB < rT Or sT > rB)
 End Function
-
-'========================
-' セル追記の剥がし（選択矩形だけ）
-'========================
-Private Sub StripAppendedLabelsInRange(ByVal ws As Worksheet, ByVal rng As Range)
-    Dim ur As Range, r As Range
-    On Error Resume Next
-    Set ur = Intersect(ws.UsedRange, rng)
-    On Error GoTo 0
-    If ur Is Nothing Then Exit Sub
-
-    On Error Resume Next
-    For Each r In ur.SpecialCells(xlCellTypeFormulas)
-        StripAppendedLabelFromCell r
-    Next r
-    On Error GoTo 0
-
-    On Error Resume Next
-    For Each r In ur.SpecialCells(xlCellTypeConstants)
-        StripAppendedLabelFromCell r
-    Next r
-    On Error GoTo 0
-End Sub
 
 ' 同じ“列”のみ合わせ、行は任意の開始～終了で矩形を作成
 Private Function BuildSameColumnsRangeByRows(ByVal ws As Worksheet, ByVal src As Range, _
@@ -859,3 +817,109 @@ Private Function MapBand6_19_To30_43(ByVal src As Range) As Range
     
     Set MapBand6_19_To30_43 = ws.Range(ws.Cells(r1, c1), ws.Cells(r2, c2))
 End Function
+
+'――――――――――――――――――――――――――――――――――――――――
+' LabelTarget（名前付き範囲）と固定セル（TARGET_CELL_ADDR）を Union で返す
+' シートスコープ → ブックスコープの順で名前付き範囲を探す
+'――――――――――――――――――――――――――――――――――――――――
+' LabelTarget（シートスコープ優先）。ブックスコープ名は「親シート=ws」のときだけ採用。
+' LabelTarget を「そのシート上に属する Range」に強制解決する
+Private Function GetTargetCells(ByVal ws As Worksheet) As Range
+    Dim u As Range, r As Range
+
+    ' 1) シートスコープ優先
+    Set r = ResolveNameToRange(ws, ws.Name, TARGET_NAMED_RANGE)
+    If Not r Is Nothing Then Set u = r
+
+    ' 2) ブックスコープ：参照先がこのシートに属する場合のみ採用
+    Set r = ResolveNameToRange(ws, vbNullString, TARGET_NAMED_RANGE)
+    If Not r Is Nothing Then
+        If r.Parent Is ws Then
+            If u Is Nothing Then
+                Set u = r
+            Else
+                Set u = Union(u, r)
+            End If
+        End If
+    End If
+
+    ' 3) 固定セル（同じシート上）
+    On Error Resume Next
+    Set r = ws.Range(TARGET_CELL_ADDR)
+    On Error GoTo 0
+    If Not r Is Nothing Then
+        If u Is Nothing Then
+            Set u = r
+        Else
+            Set u = Union(u, r)
+        End If
+    End If
+
+    Set GetTargetCells = u ' 無ければ Nothing
+End Function
+
+' scopeSheetName="" ならブックスコープ、そうでなければそのシートスコープを試みる
+Private Function ResolveNameToRange(ByVal ctxWs As Worksheet, _
+                                    ByVal scopeSheetName As String, _
+                                    ByVal nm As String) As Range
+    Dim nmObj As Name, f As String, r As Range, v As Variant
+
+    On Error Resume Next
+    If Len(scopeSheetName) > 0 Then
+        Set nmObj = ctxWs.Names(nm)                ' シートスコープ
+    Else
+        Set nmObj = ThisWorkbook.Names(nm)         ' ブックスコープ
+    End If
+    On Error GoTo 0
+    If nmObj Is Nothing Then Exit Function
+
+    ' 1) まず素直に RefersToRange
+    On Error Resume Next
+    Set r = nmObj.RefersToRange
+    On Error GoTo 0
+    If Not r Is Nothing Then
+        Set ResolveNameToRange = r
+        Exit Function
+    End If
+
+    ' 2) Evaluate で式を Range 化（OFFSET / INDEX / 構造化参照等）
+    '    =A1:A10 のように先頭が "=" なので、シート文脈で Evaluate する
+    f = nmObj.RefersTo
+    If Left$(f, 1) = "=" Then f = Mid$(f, 2)
+
+    On Error Resume Next
+    v = ctxWs.Evaluate(f)
+    On Error GoTo 0
+    If IsObject(v) Then
+        If TypeName(v) = "Range" Then
+            Set ResolveNameToRange = v
+            Exit Function
+        End If
+    End If
+End Function
+
+'（選択範囲版）選択とターゲットの交差だけを返す
+Private Function GetTargetCellsInRange(ByVal ws As Worksheet, ByVal scope As Range) As Range
+    Dim t As Range, x As Range
+    Set t = GetTargetCells(ws)
+    If t Is Nothing Then Exit Function
+    On Error Resume Next
+    Set x = Intersect(t, scope)
+    On Error GoTo 0
+    Set GetTargetCellsInRange = x  ' 交差が無ければ Nothing
+End Function
+
+Public Sub Debug_Show_LabelTarget_Addresses()
+    Dim ws As Worksheet: Set ws = ActiveSheet
+    Dim t As Range, a As Range, msg As String
+    Set t = GetTargetCells(ws)
+    If t Is Nothing Then
+        MsgBox "LabelTarget がこのシートで解決できません。", vbExclamation
+        Exit Sub
+    End If
+    For Each a In t.Areas
+        msg = msg & a.Address(External:=True) & vbCrLf
+    Next
+    MsgBox "解決結果:" & vbCrLf & msg, vbInformation
+End Sub
+
