@@ -3,32 +3,32 @@ Attribute VB_Name = "Module1"
 Option Explicit
 
 '==============================================================
-' Module1ï¼šãƒ‘ã‚¹ç®¡ç† ï¼‹ DecorConfigã‚³ãƒ”ãƒ¼(A:G) ï¼‹ RefCacheæ›´æ–°(C/D[+Tag]â†’A:C)
-'            ï¼‹ ç©ºé…åˆ—ã‚¬ãƒ¼ãƒ‰(SafeL/UBound, ArrCount)
-'            ï¼‹ è¨ºæ–­ãƒ€ãƒ³ãƒ—/ãƒ©ãƒƒãƒ‘ãƒ¼
+' Module1FƒpƒXŠÇ— { DecorConfigƒRƒs[(A:G) { RefCacheXV(C/D[+Tag]¨A:C)
+'            { ‹ó”z—ñƒK[ƒh(SafeL/UBound, ArrCount)
+'            { f’fƒ_ƒ“ƒv/ƒ‰ƒbƒp[
 '==============================================================
 
-'==== â–¼â–¼â–¼ ç’°å¢ƒã«åˆã‚ã›ã¦å¤‰æ›´ã™ã‚‹å®šæ•° â–¼â–¼â–¼ =====================
+'==== ¥¥¥ ŠÂ‹«‚É‡‚í‚¹‚Ä•ÏX‚·‚é’è” ¥¥¥ =====================
 
-'--- è£…é£¾ãƒ«ãƒ¼ãƒ«(DecorConfig) å´ ---
-Private Const DECOR_CFG_PATH_NAME As String = "CFG_DECOR_PATH"   ' åå‰å®šç¾©ã§ä¿æŒ
-Public Const DECOR_CFG_DEFAULT    As String = "\\svr03\é¶´è¦‹å·¥å ´\è£½é€ \0?.æ²“\00.è£½é€ è¡¨ å„ç¤¾\DecorMaster.xlsx"         ' æ—¢å®šãƒ‘ã‚¹(UNCæ¨å¥¨/æœªä½¿ç”¨ãªã‚‰"")
-Public Const DECOR_CFG_SHEET      As String = "DecorConfig"      ' ãƒã‚¹ã‚¿/é‹ç”¨ã‚·ãƒ¼ãƒˆå
+'--- ‘•üƒ‹[ƒ‹(DecorConfig) ‘¤ ---
+Private Const DECOR_CFG_PATH_NAME As String = "CFG_DECOR_PATH"   ' –¼‘O’è‹`‚Å•Û
+Public Const DECOR_CFG_DEFAULT    As String = "\\svr03\’ßŒ©Hê\»‘¢\0?.ŒB\00.»‘¢•\ ŠeĞ\DecorMaster.xlsx"         ' Šù’èƒpƒX(UNC„§/–¢g—p‚È‚ç"")
+Public Const DECOR_CFG_SHEET      As String = "DecorConfig"      ' ƒ}ƒXƒ^/‰^—pƒV[ƒg–¼
 
-'--- å‚ç…§ãƒã‚¹ã‚¿(Ref) å´ ---
-Private Const REF_CFG_PATH_NAME   As String = "CFG_REF_PATH"     ' åå‰å®šç¾©ã§ä¿æŒ
-Public Const REF_CFG_DEFAULT      As String = "\\svr03\é¶´è¦‹å·¥å ´\è£½é€ \0?.æ²“\00.è£½é€ è¡¨ å„ç¤¾\æ²“ç”¨ã‚³ãƒ¼ãƒ‰è¡¨.xlsx"        ' æ—¢å®šãƒ‘ã‚¹(UNCæ¨å¥¨/æœªä½¿ç”¨ãªã‚‰"")
-Public Const REF_SOURCE_SHEET     As String = "æ²“ç”¨ã‚³ãƒ¼ãƒ‰"           ' â˜…å‚ç…§å…ƒãƒ–ãƒƒã‚¯ã®ã‚·ãƒ¼ãƒˆåã«åˆã‚ã›ã¦å¤‰æ›´
-Public Const REF_COL_KEY1         As Long = 3                    ' â˜…Cåˆ—=ã€Œ3â†’4ã€æ¤œç´¢ã‚­ãƒ¼åˆ—
-Public Const REF_COL_KEY2         As Long = 4                    ' â˜…Dåˆ—=ã€Œ4â†’3ã€æ¤œç´¢ã‚­ãƒ¼åˆ—
-Public Const REF_COL_TAG          As Long = 5                    ' â˜…ä»»æ„:ã‚¿ã‚°åˆ—(0=ç„¡åŠ¹, 5=Eåˆ—ãªã©)
-Public Const REF_CACHE_SHEET      As String = "RefCache"         ' é‹ç”¨ãƒ–ãƒƒã‚¯å†…ã®ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‚·ãƒ¼ãƒˆå
+'--- QÆƒ}ƒXƒ^(Ref) ‘¤ ---
+Private Const REF_CFG_PATH_NAME   As String = "CFG_REF_PATH"     ' –¼‘O’è‹`‚Å•Û
+Public Const REF_CFG_DEFAULT      As String = "\\svr03\’ßŒ©Hê\»‘¢\0?.ŒB\00.»‘¢•\ ŠeĞ\ŒB—pƒR[ƒh•\.xlsx"        ' Šù’èƒpƒX(UNC„§/–¢g—p‚È‚ç"")
+Public Const REF_SOURCE_SHEET     As String = "ŒB—pƒR[ƒh"           ' šQÆŒ³ƒuƒbƒN‚ÌƒV[ƒg–¼‚É‡‚í‚¹‚Ä•ÏX
+Public Const REF_COL_KEY1         As Long = 3                    ' šC—ñ=u3¨4vŒŸõƒL[—ñ
+Public Const REF_COL_KEY2         As Long = 4                    ' šD—ñ=u4¨3vŒŸõƒL[—ñ
+Public Const REF_COL_TAG          As Long = 5                    ' š”CˆÓ:ƒ^ƒO—ñ(0=–³Œø, 5=E—ñ‚È‚Ç)
+Public Const REF_CACHE_SHEET      As String = "RefCache"         ' ‰^—pƒuƒbƒN“à‚ÌƒLƒƒƒbƒVƒ…ƒV[ƒg–¼
 
-'==== â–²â–²â–² å¿…è¦ã«å¿œã˜ã¦å¤‰æ›´ â–²â–²â–² ===============================
+'==== £££ •K—v‚É‰‚¶‚Ä•ÏX £££ ===============================
 
 
 '==============================================================
-' ç©ºé…åˆ—/æœªé…åˆ—ã‚¬ãƒ¼ãƒ‰
+' ‹ó”z—ñ/–¢”z—ñƒK[ƒh
 '==============================================================
 Public Function SafeUBound(v As Variant) As Long
     On Error GoTo EH
@@ -54,7 +54,7 @@ Public Function ArrCount(v As Variant) As Long
 End Function
 
 '==============================================================
-' å…±é€š: ãƒ‘ã‚¹å­˜åœ¨ç¢ºèªï¼ˆUNC/æ—¥æœ¬èªãƒ‘ã‚¹å¯¾å¿œï¼‰
+' ‹¤’Ê: ƒpƒX‘¶İŠm”FiUNC/“ú–{ŒêƒpƒX‘Î‰j
 '==============================================================
 Private Function SafeFileExists(ByVal path As String) As Boolean
     On Error Resume Next
@@ -68,7 +68,7 @@ Private Function SafeFileExists(ByVal path As String) As Boolean
 End Function
 
 '==============================================================
-' åå‰å®šç¾©ã«ãƒ‘ã‚¹ä¿å­˜ï¼ˆVeryHiddenã‚·ãƒ¼ãƒˆã«æ ¼ç´ï¼‰
+' –¼‘O’è‹`‚ÉƒpƒX•Û‘¶iVeryHiddenƒV[ƒg‚ÉŠi”[j
 '==============================================================
 Private Sub SavePathToName(ByVal nm As String, ByVal p As String)
     Dim ws As Worksheet
@@ -97,7 +97,7 @@ Private Function LoadPathFromName(ByVal nm As String) As String
 End Function
 
 '==============================================================
-' ãƒ•ã‚¡ã‚¤ãƒ«é¸æŠå…±é€š
+' ƒtƒ@ƒCƒ‹‘I‘ğ‹¤’Ê
 '==============================================================
 Private Function PickFilePath(ByVal titleText As String) As String
     Dim fd As FileDialog
@@ -116,7 +116,7 @@ Private Function PickFilePath(ByVal titleText As String) As String
 End Function
 
 '==============================================================
-' DecorConfig ç”¨ãƒ‘ã‚¹å–å¾—ï¼ˆä¿å­˜ï¼æ—¢å®šï¼é¸æŠï¼‰
+' DecorConfig —pƒpƒXæ“¾i•Û‘¶„Šù’è„‘I‘ğj
 '==============================================================
 Public Function GetDecorCfgPath() As String
     Dim saved As String, p As String
@@ -134,7 +134,7 @@ Public Function GetDecorCfgPath() As String
         Exit Function
     End If
 
-    p = PickFilePath("è£…é£¾ãƒ«ãƒ¼ãƒ«ãƒã‚¹ã‚¿(DecorConfig)ã‚’é¸æŠã—ã¦ãã ã•ã„")
+    p = PickFilePath("‘•üƒ‹[ƒ‹ƒ}ƒXƒ^(DecorConfig)‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢")
     Debug.Print "[DecorCfg] picked:", p, " exists=", SafeFileExists(p)
     If SafeFileExists(p) Then
         SavePathToName DECOR_CFG_PATH_NAME, p
@@ -145,7 +145,7 @@ Public Function GetDecorCfgPath() As String
 End Function
 
 '==============================================================
-' Ref(å‚ç…§ãƒã‚¹ã‚¿) ç”¨ãƒ‘ã‚¹å–å¾—ï¼ˆä¿å­˜ï¼æ—¢å®šï¼é¸æŠï¼‰
+' Ref(QÆƒ}ƒXƒ^) —pƒpƒXæ“¾i•Û‘¶„Šù’è„‘I‘ğj
 '==============================================================
 Public Function GetRefCfgPath() As String
     Dim saved As String, p As String
@@ -163,7 +163,7 @@ Public Function GetRefCfgPath() As String
         Exit Function
     End If
 
-    p = PickFilePath("å‚ç…§ãƒã‚¹ã‚¿ãƒ–ãƒƒã‚¯(C/Dåˆ—)ã‚’é¸æŠã—ã¦ãã ã•ã„")
+    p = PickFilePath("QÆƒ}ƒXƒ^ƒuƒbƒN(C/D—ñ)‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢")
     Debug.Print "[RefCfg] picked:", p, " exists=", SafeFileExists(p)
     If SafeFileExists(p) Then
         SavePathToName REF_CFG_PATH_NAME, p
@@ -174,7 +174,7 @@ Public Function GetRefCfgPath() As String
 End Function
 
 '==============================================================
-' DecorConfigï¼ˆA:Gï¼‰ã‚³ãƒ”ãƒ¼ï¼šãƒã‚¹ã‚¿ â†’ ã“ã®ãƒ–ãƒƒã‚¯
+' DecorConfigiA:GjƒRƒs[Fƒ}ƒXƒ^ ¨ ‚±‚ÌƒuƒbƒN
 '==============================================================
 Public Sub UpdateDecorConfigFromFile()
     Dim p As String, wbCfg As Workbook, wbDst As Workbook, wsSrc As Worksheet, wsDst As Worksheet
@@ -184,17 +184,17 @@ Public Sub UpdateDecorConfigFromFile()
 
     p = GetDecorCfgPath()
     If p = "" Then
-        MsgBox "è£…é£¾ãƒã‚¹ã‚¿ãƒ•ã‚¡ã‚¤ãƒ«ãŒé¸æŠã•ã‚Œãªã‹ã£ãŸãŸã‚ã€å‡¦ç†ã‚’ä¸­æ­¢ã—ã¾ã™ã€‚", vbExclamation
+        MsgBox "‘•üƒ}ƒXƒ^ƒtƒ@ƒCƒ‹‚ª‘I‘ğ‚³‚ê‚È‚©‚Á‚½‚½‚ßAˆ—‚ğ’†~‚µ‚Ü‚·B", vbExclamation
         Exit Sub
     End If
     If Not SafeFileExists(p) Then
-        MsgBox "è¨­å®šã•ã‚Œã¦ã„ã‚‹è£…é£¾ãƒã‚¹ã‚¿ãƒ•ã‚¡ã‚¤ãƒ«ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“ã€‚" & vbCrLf & p, vbExclamation
+        MsgBox "İ’è‚³‚ê‚Ä‚¢‚é‘•üƒ}ƒXƒ^ƒtƒ@ƒCƒ‹‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñB" & vbCrLf & p, vbExclamation
         Exit Sub
     End If
 
     Application.ScreenUpdating = False
 
-    ' æ—¢ã«é–‹ã„ã¦ã„ã‚‹å ´åˆã¯å†åˆ©ç”¨
+    ' Šù‚ÉŠJ‚¢‚Ä‚¢‚éê‡‚ÍÄ—˜—p
     For Each wb In Application.Workbooks
         If StrComp(wb.FullName, p, vbTextCompare) = 0 Then Set wbCfg = wb: Exit For
     Next wb
@@ -205,11 +205,11 @@ Public Sub UpdateDecorConfigFromFile()
         On Error GoTo 0
     End If
     If wbCfg Is Nothing Then
-        MsgBox "è£…é£¾ãƒã‚¹ã‚¿ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é–‹ã‘ã¾ã›ã‚“ã§ã—ãŸã€‚" & vbCrLf & p, vbExclamation
+        MsgBox "‘•üƒ}ƒXƒ^ƒtƒ@ƒCƒ‹‚ğŠJ‚¯‚Ü‚¹‚ñ‚Å‚µ‚½B" & vbCrLf & p, vbExclamation
         GoTo DEC_EXIT
     End If
     If wbCfg Is wbDst Then
-        MsgBox "ã“ã®ãƒ–ãƒƒã‚¯è‡ªèº«ã‚’è£…é£¾ãƒã‚¹ã‚¿ã¨ã—ã¦æŒ‡å®šã§ãã¾ã›ã‚“ã€‚", vbExclamation
+        MsgBox "‚±‚ÌƒuƒbƒN©g‚ğ‘•üƒ}ƒXƒ^‚Æ‚µ‚Äw’è‚Å‚«‚Ü‚¹‚ñB", vbExclamation
         GoTo DEC_EXIT
     End If
 
@@ -217,7 +217,7 @@ Public Sub UpdateDecorConfigFromFile()
     Set wsSrc = wbCfg.Worksheets(DECOR_CFG_SHEET)
     On Error GoTo 0
     If wsSrc Is Nothing Then
-        MsgBox "è£…é£¾ãƒã‚¹ã‚¿ã«ã‚·ãƒ¼ãƒˆ '" & DECOR_CFG_SHEET & "' ãŒã‚ã‚Šã¾ã›ã‚“ã€‚", vbExclamation
+        MsgBox "‘•üƒ}ƒXƒ^‚ÉƒV[ƒg '" & DECOR_CFG_SHEET & "' ‚ª‚ ‚è‚Ü‚¹‚ñB", vbExclamation
         GoTo DEC_EXIT
     End If
 
@@ -230,7 +230,7 @@ Public Sub UpdateDecorConfigFromFile()
         wsDst.Visible = xlSheetHidden
     End If
 
-    ' A:G ã®ã©ã“ã‹ã«å€¤ãŒã‚ã‚‹æœ€çµ‚è¡Œ
+    ' A:G ‚Ì‚Ç‚±‚©‚É’l‚ª‚ ‚éÅIs
     lastSrc = Application.Max( _
         wsSrc.Cells(wsSrc.Rows.Count, 1).End(xlUp).row, _
         wsSrc.Cells(wsSrc.Rows.Count, 2).End(xlUp).row, _
@@ -245,7 +245,7 @@ Public Sub UpdateDecorConfigFromFile()
         wsDst.Range("A1:G" & lastSrc).Value = wsSrc.Range("A1:G" & lastSrc).Value
     End If
 
-    MsgBox "è£…é£¾ãƒ«ãƒ¼ãƒ«(DecorConfig)ã‚’æ›´æ–°ã—ã¾ã—ãŸã€‚ï¼ˆA?G åˆ—å¯¾å¿œï¼‰", vbInformation
+    MsgBox "‘•üƒ‹[ƒ‹(DecorConfig)‚ğXV‚µ‚Ü‚µ‚½BiA?G —ñ‘Î‰j", vbInformation
 
 DEC_EXIT:
     On Error Resume Next
@@ -254,7 +254,7 @@ DEC_EXIT:
 End Sub
 
 '==============================================================
-' RefCache æ›´æ–°ï¼šå‚ç…§ãƒã‚¹ã‚¿(C/D[+Tag]) â†’ ã“ã®ãƒ–ãƒƒã‚¯ RefCache(A:C)
+' RefCache XVFQÆƒ}ƒXƒ^(C/D[+Tag]) ¨ ‚±‚ÌƒuƒbƒN RefCache(A:C)
 '==============================================================
 Public Sub UpdateRefCacheFromRefFile()
     Dim p As String, wbRef As Workbook, wbDst As Workbook
@@ -267,17 +267,17 @@ Public Sub UpdateRefCacheFromRefFile()
 
     p = GetRefCfgPath()
     If p = "" Then
-        MsgBox "å‚ç…§ãƒã‚¹ã‚¿ãƒ•ã‚¡ã‚¤ãƒ«ãŒé¸æŠã•ã‚Œãªã‹ã£ãŸãŸã‚ã€å‡¦ç†ã‚’ä¸­æ­¢ã—ã¾ã™ã€‚", vbExclamation
+        MsgBox "QÆƒ}ƒXƒ^ƒtƒ@ƒCƒ‹‚ª‘I‘ğ‚³‚ê‚È‚©‚Á‚½‚½‚ßAˆ—‚ğ’†~‚µ‚Ü‚·B", vbExclamation
         Exit Sub
     End If
     If Not SafeFileExists(p) Then
-        MsgBox "è¨­å®šã•ã‚Œã¦ã„ã‚‹å‚ç…§ãƒã‚¹ã‚¿ãƒ•ã‚¡ã‚¤ãƒ«ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“ã€‚" & vbCrLf & p, vbExclamation
+        MsgBox "İ’è‚³‚ê‚Ä‚¢‚éQÆƒ}ƒXƒ^ƒtƒ@ƒCƒ‹‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñB" & vbCrLf & p, vbExclamation
         Exit Sub
     End If
 
     Application.ScreenUpdating = False
 
-    ' æ—¢ã«é–‹ã„ã¦ã„ã‚‹å ´åˆã¯å†åˆ©ç”¨
+    ' Šù‚ÉŠJ‚¢‚Ä‚¢‚éê‡‚ÍÄ—˜—p
     For Each wb In Application.Workbooks
         If StrComp(wb.FullName, p, vbTextCompare) = 0 Then Set wbRef = wb: Exit For
     Next wb
@@ -288,11 +288,11 @@ Public Sub UpdateRefCacheFromRefFile()
         On Error GoTo 0
     End If
     If wbRef Is Nothing Then
-        MsgBox "å‚ç…§ãƒã‚¹ã‚¿ãƒ•ã‚¡ã‚¤ãƒ«ã‚’é–‹ã‘ã¾ã›ã‚“ã§ã—ãŸã€‚", vbExclamation
+        MsgBox "QÆƒ}ƒXƒ^ƒtƒ@ƒCƒ‹‚ğŠJ‚¯‚Ü‚¹‚ñ‚Å‚µ‚½B", vbExclamation
         GoTo REF_EXIT
     End If
     If wbRef Is wbDst Then
-        MsgBox "ã“ã®ãƒ–ãƒƒã‚¯è‡ªèº«ã‚’å‚ç…§ãƒã‚¹ã‚¿ã¨ã—ã¦æŒ‡å®šã§ãã¾ã›ã‚“ã€‚", vbExclamation
+        MsgBox "‚±‚ÌƒuƒbƒN©g‚ğQÆƒ}ƒXƒ^‚Æ‚µ‚Äw’è‚Å‚«‚Ü‚¹‚ñB", vbExclamation
         GoTo REF_EXIT
     End If
 
@@ -300,11 +300,11 @@ Public Sub UpdateRefCacheFromRefFile()
     Set wsSrc = wbRef.Worksheets(REF_SOURCE_SHEET)
     On Error GoTo 0
     If wsSrc Is Nothing Then
-        MsgBox "å‚ç…§ãƒã‚¹ã‚¿ã«ã‚·ãƒ¼ãƒˆ '" & REF_SOURCE_SHEET & "' ãŒã‚ã‚Šã¾ã›ã‚“ã€‚", vbExclamation
+        MsgBox "QÆƒ}ƒXƒ^‚ÉƒV[ƒg '" & REF_SOURCE_SHEET & "' ‚ª‚ ‚è‚Ü‚¹‚ñB", vbExclamation
         GoTo REF_EXIT
     End If
 
-    ' ã‚­ãƒ£ãƒƒã‚·ãƒ¥å…ˆã‚·ãƒ¼ãƒˆå–å¾—/ä½œæˆ
+    ' ƒLƒƒƒbƒVƒ…æƒV[ƒgæ“¾/ì¬
     On Error Resume Next
     Set wsDst = wbDst.Worksheets(REF_CACHE_SHEET)
     On Error GoTo 0
@@ -314,24 +314,24 @@ Public Sub UpdateRefCacheFromRefFile()
         wsDst.Visible = xlSheetHidden
     End If
 
-    ' è¦‹å‡ºã—
+    ' Œ©o‚µ
     wsDst.Cells.ClearContents
-    wsDst.Range("A1").Value = "C_col"   ' = å‚ç…§å…ƒ3åˆ—ç›® (Key1)
-    wsDst.Range("B1").Value = "D_col"   ' = å‚ç…§å…ƒ4åˆ—ç›® (Key2)
-    wsDst.Range("C1").Value = "Tag"     ' ä»»æ„ã‚¿ã‚°
+    wsDst.Range("A1").Value = "C_col"   ' = QÆŒ³3—ñ–Ú (Key1)
+    wsDst.Range("B1").Value = "D_col"   ' = QÆŒ³4—ñ–Ú (Key2)
+    wsDst.Range("C1").Value = "Tag"     ' ”CˆÓƒ^ƒO
 
-    ' å‚ç…§å…ƒã®æœ€çµ‚è¡Œï¼ˆKey1/Key2/Tag ã®ã„ãšã‚Œã‹ã«å€¤ãŒã‚ã‚‹è¡Œã¾ã§ï¼‰
+    ' QÆŒ³‚ÌÅIsiKey1/Key2/Tag ‚Ì‚¢‚¸‚ê‚©‚É’l‚ª‚ ‚és‚Ü‚Åj
     last = Application.Max( _
         wsSrc.Cells(wsSrc.Rows.Count, REF_COL_KEY1).End(xlUp).row, _
         wsSrc.Cells(wsSrc.Rows.Count, REF_COL_KEY2).End(xlUp).row, _
         IIf(REF_COL_TAG > 0, wsSrc.Cells(wsSrc.Rows.Count, REF_COL_TAG).End(xlUp).row, 1))
 
     If last < 2 Then
-        MsgBox "å‚ç…§ãƒã‚¹ã‚¿ã«æœ‰åŠ¹ãªãƒ‡ãƒ¼ã‚¿ãŒã‚ã‚Šã¾ã›ã‚“ã€‚", vbExclamation
+        MsgBox "QÆƒ}ƒXƒ^‚É—LŒø‚Èƒf[ƒ^‚ª‚ ‚è‚Ü‚¹‚ñB", vbExclamation
         GoTo REF_EXIT
     End If
 
-    ' å€¤ã‚³ãƒ”ãƒ¼ï¼ˆA:Cã«æ ¼ç´ï¼‰
+    ' ’lƒRƒs[iA:C‚ÉŠi”[j
     For r = 2 To last
         k1 = CStr(wsSrc.Cells(r, REF_COL_KEY1).Value)
         k2 = CStr(wsSrc.Cells(r, REF_COL_KEY2).Value)
@@ -345,7 +345,7 @@ Public Sub UpdateRefCacheFromRefFile()
         wsDst.Cells(r, 3).Value = tag
     Next r
 
-    MsgBox "å‚ç…§ã‚­ãƒ£ãƒƒã‚·ãƒ¥(RefCache)ã‚’æ›´æ–°ã—ã¾ã—ãŸã€‚(" & (last - 1) & "ä»¶)", vbInformation
+    MsgBox "QÆƒLƒƒƒbƒVƒ…(RefCache)‚ğXV‚µ‚Ü‚µ‚½B(" & (last - 1) & "Œ)", vbInformation
 
 REF_EXIT:
     On Error Resume Next
@@ -354,7 +354,7 @@ REF_EXIT:
 End Sub
 
 '==============================================================
-' ä¾¿åˆ©ï¼šä¸¡æ–¹ã¾ã¨ã‚ã¦æ›´æ–°
+' •Ö—˜F—¼•û‚Ü‚Æ‚ß‚ÄXV
 '==============================================================
 Public Sub UpdateAllMasterCaches()
     UpdateDecorConfigFromFile
@@ -362,7 +362,7 @@ Public Sub UpdateAllMasterCaches()
 End Sub
 
 '==============================================================
-' è¨ºæ–­ãƒ¦ãƒ¼ãƒ†ã‚£ãƒªãƒ†ã‚£
+' f’fƒ†[ƒeƒBƒŠƒeƒB
 '==============================================================
 Public Sub Debug_DecorRulesSummary()
     Dim ws As Worksheet, lastRow As Long
@@ -401,7 +401,7 @@ Public Sub DumpDecorRules()
     Debug.Print "----------------------------------"
 End Sub
 
-' ã‚¢ã‚¯ãƒ†ã‚£ãƒ–ã‚·ãƒ¼ãƒˆä¸Šã§ TraceDecorAtRow ã‚’å‘¼ã¶ãƒ©ãƒƒãƒ‘ãƒ¼
+' ƒAƒNƒeƒBƒuƒV[ƒgã‚Å TraceDecorAtRow ‚ğŒÄ‚Ôƒ‰ƒbƒp[
 Public Sub TraceDecorAtRow_Active(Optional ByVal topRow As Long = 6)
     Dim macroName As String
     macroName = "'" & ThisWorkbook.Name & "'!" & ActiveSheet.CodeName & ".TraceDecorAtRow"
@@ -409,10 +409,10 @@ Public Sub TraceDecorAtRow_Active(Optional ByVal topRow As Long = 6)
 End Sub
 
 '===========================================
-' EnableEvents æ•‘å‡ºãƒ¦ãƒ¼ãƒ†ã‚£ãƒªãƒ†ã‚£
-' - å®Ÿè¡Œã™ã‚‹ã¨ã€EnableEvents ã‚’ True ã«æˆ»ã—ã€
-'   å¿µã®ãŸã‚ ScreenUpdating / Calculation ã‚‚æ•´ãˆã‚‹
-' - ç›´å¾Œã«è»½ãã‚¤ãƒ™ãƒ³ãƒˆã‚’ç™ºç«ã•ã›ã¦å‹•ä½œç¢ºèªãƒ­ã‚°ã‚’å‡ºã™
+' EnableEvents ‹~oƒ†[ƒeƒBƒŠƒeƒB
+' - Às‚·‚é‚ÆAEnableEvents ‚ğ True ‚É–ß‚µA
+'   ”O‚Ì‚½‚ß ScreenUpdating / Calculation ‚à®‚¦‚é
+' - ’¼Œã‚ÉŒy‚­ƒCƒxƒ“ƒg‚ğ”­‰Î‚³‚¹‚Ä“®ìŠm”FƒƒO‚ğo‚·
 '===========================================
 Public Sub Fix_EnableEvents(Optional ByVal alsoResetCalc As Boolean = True, _
                             Optional ByVal verbose As Boolean = True)
@@ -423,34 +423,34 @@ Public Sub Fix_EnableEvents(Optional ByVal alsoResetCalc As Boolean = True, _
     oldSU = Application.ScreenUpdating
     oldCalc = Application.Calculation
 
-    ' ã¾ãšæç”»ã‚’æ­¢ã‚ã‚‹
+    ' ‚Ü‚¸•`‰æ‚ğ~‚ß‚é
     Application.ScreenUpdating = False
 
-    ' è¨ˆç®—ãƒ¢ãƒ¼ãƒ‰ã‚’æ‰‹å‹•ã¸ï¼ˆä»»æ„ï¼‰
+    ' ŒvZƒ‚[ƒh‚ğè“®‚Öi”CˆÓj
     If alsoResetCalc Then Application.Calculation = xlCalculationManual
 
-    ' ã‚¤ãƒ™ãƒ³ãƒˆã‚’ç¢ºå®Ÿã«æœ‰åŠ¹åŒ–
+    ' ƒCƒxƒ“ƒg‚ğŠmÀ‚É—LŒø‰»
     Application.EnableEvents = True
 
-    ' è»½ã DoEvents ã‚’å…¥ã‚Œã¦åæ˜ 
+    ' Œy‚­ DoEvents ‚ğ“ü‚ê‚Ä”½‰f
     DoEvents
 
-    ' ã‚ªãƒ—ã‚·ãƒ§ãƒ³ï¼šè¨ˆç®—ãƒ¢ãƒ¼ãƒ‰ã‚’å…ƒã«æˆ»ã™
+    ' ƒIƒvƒVƒ‡ƒ“FŒvZƒ‚[ƒh‚ğŒ³‚É–ß‚·
     If alsoResetCalc Then Application.Calculation = oldCalc
 
-    ' ç”»é¢æ›´æ–°ã‚’å…ƒã«æˆ»ã™
+    ' ‰æ–ÊXV‚ğŒ³‚É–ß‚·
     Application.ScreenUpdating = oldSU
 
     If verbose Then
         Debug.Print "[Fix_EnableEvents] oldEE=", oldEE, " -> ", Application.EnableEvents, _
                     "  Calc=", Application.Calculation, "  ScreenUpdating=", Application.ScreenUpdating
-        ' ä»»æ„ï¼šå°ã•ãªãƒ€ãƒŸãƒ¼ç·¨é›†ã§ã‚¤ãƒ™ãƒ³ãƒˆãŒå‹•ãã‹ç¢ºèªï¼ˆã‚¢ã‚¯ãƒ†ã‚£ãƒ–ã‚»ãƒ«ã«ä¾å­˜ã—ãªã„å®‰å…¨ç‰ˆï¼‰
+        ' ”CˆÓF¬‚³‚Èƒ_ƒ~[•ÒW‚ÅƒCƒxƒ“ƒg‚ª“®‚­‚©Šm”FiƒAƒNƒeƒBƒuƒZƒ‹‚ÉˆË‘¶‚µ‚È‚¢ˆÀ‘S”Åj
         SafeNudgeActiveCell
     End If
     Exit Sub
 
 EH:
-    ' ä¸‡ä¸€ã®æ™‚ã§ã‚‚ã‚¤ãƒ™ãƒ³ãƒˆã‚’æœ‰åŠ¹ã«ã—ã¦æŠœã‘ã‚‹
+    ' –œˆê‚Ì‚Å‚àƒCƒxƒ“ƒg‚ğ—LŒø‚É‚µ‚Ä”²‚¯‚é
     On Error Resume Next
     Application.EnableEvents = True
     Application.ScreenUpdating = True
@@ -459,12 +459,12 @@ EH:
 End Sub
 
 Public Sub Fix_EnableEvents_Run()
-    ' ã“ã“ã§æœ¬ä½“ã‚’å‘¼ã¶ï¼ˆå¼•æ•°ãªã—ï¼‰
+    ' ‚±‚±‚Å–{‘Ì‚ğŒÄ‚Ôiˆø”‚È‚µj
     Fix_EnableEvents
 End Sub
 
 '-------------------------------------------
-' ã‚¢ã‚¯ãƒ†ã‚£ãƒ–ã‚»ãƒ«ã‚’å®‰å…¨ã« "ã¤ã¤ã„ã¦" Change ã‚’èª˜ç™ºï¼ˆä»»æ„ï¼‰
+' ƒAƒNƒeƒBƒuƒZƒ‹‚ğˆÀ‘S‚É "‚Â‚Â‚¢‚Ä" Change ‚ğ—U”­i”CˆÓj
 '-------------------------------------------
 Private Sub SafeNudgeActiveCell()
     On Error Resume Next
@@ -472,6 +472,7 @@ Private Sub SafeNudgeActiveCell()
     Set c = ActiveCell
     If c Is Nothing Then Exit Sub
     v = c.Value
-    c.Value = v ' åŒå€¤ä»£å…¥ï¼ˆå¤šãã®ã‚±ãƒ¼ã‚¹ã§ Change ã¯ç™ºç«ã—ãªã„ãŒã€SelectionChange ç­‰ã®ç¢ºèªç”¨ï¼‰
+    c.Value = v ' “¯’l‘ã“üi‘½‚­‚ÌƒP[ƒX‚Å Change ‚Í”­‰Î‚µ‚È‚¢‚ªASelectionChange “™‚ÌŠm”F—pj
     Debug.Print "[Fix_EnableEvents] Nudge @", c.Address(0, 0), " EnableEvents=", Application.EnableEvents
 End Sub
+

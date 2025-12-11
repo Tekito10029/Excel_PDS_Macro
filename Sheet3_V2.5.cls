@@ -10,20 +10,20 @@ Attribute VB_Exposed = True
 'V_2.5
 Option Explicit
 
-'=== åŸºæœ¬è¨­å®š ===
+'=== Šî–{İ’è ===
 Private Const ROW_START As Long = 6
 Private Const ROW_END   As Long = 19
 
-Private Const LEFT_COL As Long = 4            ' Dåˆ—ï¼ˆ2è¡Œåˆ†å‰²å‡ºåŠ›: ä¸Š2æ¡/ä¸‹3æ¡ï¼‰
-Private Const RIGHT_COL_START As Long = 7     ' Gåˆ—ï¼ˆå³å´çµåˆãƒ–ãƒ­ãƒƒã‚¯å…ˆé ­ï¼‰
-Private Const RIGHT_COL_END   As Long = 10    ' Jåˆ—ï¼ˆå³å´çµåˆãƒ–ãƒ­ãƒƒã‚¯æœ«å°¾ï¼‰
+Private Const LEFT_COL As Long = 4            ' D—ñi2s•ªŠ„o—Í: ã2Œ…/‰º3Œ…j
+Private Const RIGHT_COL_START As Long = 7     ' G—ñi‰E‘¤Œ‹‡ƒuƒƒbƒNæ“ªj
+Private Const RIGHT_COL_END   As Long = 10    ' J—ñi‰E‘¤Œ‹‡ƒuƒƒbƒN––”öj
 
-'=== è£…é£¾è¨­å®šï¼ˆæœªãƒ’ãƒƒãƒˆæ™‚ã®æ—¢å®šè£…é£¾ãªã©ï¼‰ ===
+'=== ‘•üİ’èi–¢ƒqƒbƒg‚ÌŠù’è‘•ü‚È‚Çj ===
 Private Const DECOR_CLEAR_BELOW_FIRST As Boolean = False
 Private Const DECOR_NOHIT_BEFORE_TEXT As String = ""
-Private Const DECOR_NOHIT_AFTER_TEXT  As String = "t"   ' å‹•ä½œç¢ºèªç”¨ã€‚ä¸è¦ãªã‚‰ç©ºã«
+Private Const DECOR_NOHIT_AFTER_TEXT  As String = "t"   ' “®ìŠm”F—pB•s—v‚È‚ç‹ó‚É
 
-'=== æœªãƒ’ãƒƒãƒˆæ™‚ å·¦åˆ—ãƒ•ã‚©ãƒ¼ãƒ«ãƒãƒƒã‚¯ ===
+'=== –¢ƒqƒbƒg ¶—ñƒtƒH[ƒ‹ƒoƒbƒN ===
 Private Const UNMATCHED_LEFT_UPPER As String = "62"
 Private Const UNMATCHED_LEFT_LOWER As String = "018"
 
@@ -35,7 +35,7 @@ Private Sub Worksheet_Change(ByVal Target As Range)
     Application.EnableEvents = False
     Application.ScreenUpdating = False
 
-    '=== RefCache ã‹ã‚‰å‚ç…§ãƒãƒƒãƒ—æ§‹ç¯‰ï¼ˆåˆ¥ãƒ–ãƒƒã‚¯ã¯é–‹ã‹ãªã„ï¼‰===
+    '=== RefCache ‚©‚çQÆƒ}ƒbƒv\’zi•ÊƒuƒbƒN‚ÍŠJ‚©‚È‚¢j===
     Dim map34 As Object, map43 As Object
     Set map34 = CreateObject("Scripting.Dictionary")
     Set map43 = CreateObject("Scripting.Dictionary")
@@ -44,14 +44,14 @@ Private Sub Worksheet_Change(ByVal Target As Range)
         Static warned As Boolean
         If Not warned Then
             warned = True
-            MsgBox "å‚ç…§ã‚­ãƒ£ãƒƒã‚·ãƒ¥(RefCache)ãŒã‚ã‚Šã¾ã›ã‚“ã€‚" & vbCrLf & _
-                   "ãƒ¡ãƒ‹ãƒ¥ãƒ¼ã‹ã‚‰ã€UpdateRefCacheFromRefFileã€ã‚’å®Ÿè¡Œã—ã¦æ›´æ–°ã—ã¦ãã ã•ã„ã€‚", vbExclamation
+            MsgBox "QÆƒLƒƒƒbƒVƒ…(RefCache)‚ª‚ ‚è‚Ü‚¹‚ñB" & vbCrLf & _
+                   "ƒƒjƒ…[‚©‚çwUpdateRefCacheFromRefFilex‚ğÀs‚µ‚ÄXV‚µ‚Ä‚­‚¾‚³‚¢B", vbExclamation
         End If
         GoTo CleanUp
     End If
     RefDebug_Stats "Cache", map34, map43
 
-    '=== å¤‰æ›´ã‚»ãƒ«ã‚’ãƒ«ãƒ¼ãƒ†ã‚£ãƒ³ã‚° ===
+    '=== •ÏXƒZƒ‹‚ğƒ‹[ƒeƒBƒ“ƒO ===
     Dim ar As Range, c As Range
     Dim handled As Boolean: handled = False
 
@@ -65,13 +65,45 @@ Private Sub Worksheet_Change(ByVal Target As Range)
     If Not handled Then
         Debug.Print "[INFO] no handled cells in change."
     End If
+    
+    '=== 5`6—ñ‚ÌŒ‹‡ƒZƒ‹‚Å @ ¨ V •ÏŠ· ===
+    Dim tl As Range
+    For Each ar In Target.Areas
+    For Each c In ar.Cells
+        ' s”ÍˆÍŠO‚ÍƒXƒLƒbƒv
+        If c.row >= ROW_START And c.row <= ROW_END Then
+            ' Œ‹‡ƒZƒ‹‚Íæ“ªƒZƒ‹‚¾‚¯ˆ—
+            If c.MergeCells Then
+                Set tl = c.MergeArea.Cells(1, 1)
+                If c.Address <> tl.Address Then GoTo NextC
+            Else
+                Set tl = c
+            End If
+
+            ' —ñ5`6‚¾‚¯ˆ—
+            If tl.Column >= 5 And tl.Column <= 6 Then
+                Dim beforeVal As String, afterVal As String
+                beforeVal = CStr(tl.Value)
+                ' ”¼Šp/‘SŠp‚Ì @ ‚ğ V ‚É’uŠ·i‘S’uŠ·j
+                afterVal = Replace(beforeVal, "@", "V")
+                afterVal = Replace(afterVal, "—", "V")
+                If afterVal <> beforeVal Then
+                    tl.Value = afterVal
+                    ' ‘¼‚Ìˆ—‚Æ‹£‡‚µ‚È‚¢‚ªA•K—v‚È‚ç handled=True ‚È‚Çƒtƒ‰ƒOXV
+                End If
+            End If
+        End If
+NextC:
+    Next c
+Next ar
+
 
 CleanUp:
     Application.ScreenUpdating = True
     Application.EnableEvents = True
 End Sub
 
-'======================== 1ã‚»ãƒ«ãƒ«ãƒ¼ãƒ†ã‚£ãƒ³ã‚° ========================
+'======================== 1ƒZƒ‹ƒ‹[ƒeƒBƒ“ƒO ========================
 Private Function RouteOneCell(ByVal c As Range, ByVal map34 As Object, ByVal map43 As Object) As Boolean
     Dim tl As Range, tlRow As Long, tlCol As Long
 
@@ -88,7 +120,7 @@ Private Function RouteOneCell(ByVal c As Range, ByVal map34 As Object, ByVal map
         RouteOneCell = False: Exit Function
     End If
 
-    '==== å·¦ï¼ˆåˆ—4ï¼‰â†’å³ ====
+    '==== ¶i—ñ4j¨‰E ====
     If tlCol = LEFT_COL Then
         Dim topRowL As Long: topRowL = PairTopRow(tlRow)
         If tlRow <> topRowL Then
@@ -121,7 +153,7 @@ Private Function RouteOneCell(ByVal c As Range, ByVal map34 As Object, ByVal map
         RouteOneCell = True: Exit Function
     End If
 
-    '==== å³ï¼ˆåˆ—7ï½10ï¼‰â†’å·¦ ====
+    '==== ‰Ei—ñ7`10j¨¶ ====
     If tlCol >= RIGHT_COL_START And tlCol <= RIGHT_COL_END Then
         Dim topRowR As Long: topRowR = PairTopRow(tlRow)
         If tlRow <> topRowR Then
@@ -146,7 +178,7 @@ Private Function RouteOneCell(ByVal c As Range, ByVal map34 As Object, ByVal map
             Debug.Print "  [R->L] hitKey=[", matchedKey2, "] score=", score2, " out=[", outVal2, "]"
 
             If score2 = 0 Then
-                WriteLeftFallback topRowR      ' å·¦ã¯ã€Œæœªã€ã€Œç™»éŒ²ã€
+                WriteLeftFallback topRowR      ' ¶‚Íu–¢vu“o˜^v
                 ApplyDecorations topRowR, ""
             Else
                 WriteLeftSplit topRowR, outVal2
@@ -197,8 +229,8 @@ Private Function BuildMapsFromCache(ByRef map34 As Object, ByRef map43 As Object
     BuildMapsFromCache = True
 End Function
 
-'======================== æ¤œç´¢ã‚¹ã‚³ã‚¢ï¼ˆã‚†ã‚‹ã‚æ¤œç´¢ï¼‰ ========================
-' è‡ªå‹•å…¥åŠ›ï¼ˆæ¤œç´¢ï¼‰å°‚ç”¨ï¼šçŸ­èªOKãƒ»è¨˜å·/ç©ºç™½ã®æºã‚Œå¸å
+'======================== ŒŸõƒXƒRƒAi‚ä‚é‚ßŒŸõj ========================
+' ©“®“ü—ÍiŒŸõjê—pF’ZŒêOKE‹L†/‹ó”’‚Ì—h‚ê‹zû
 Private Function ContainsLoose(ByVal textNorm As String, ByVal patternNorm As String) As Boolean
     Dim t As String, p As String
     t = textNorm: p = patternNorm
@@ -310,7 +342,7 @@ NextKey:
     Next k
 End Sub
 
-'======================== è£…é£¾ï¼šãƒ¦ãƒ¼ãƒ†ã‚£ãƒªãƒ†ã‚£ ========================
+'======================== ‘•üFƒ†[ƒeƒBƒŠƒeƒB ========================
 Private Sub AppendUnique(ByRef buf As String, ByVal frag As String, ByVal baseText As String)
     Dim f As String: f = CStr(frag)
     If Len(f) = 0 Then Exit Sub
@@ -357,8 +389,8 @@ Private Function IsNonWord(ByVal ch As String) As Boolean
     IsNonWord = Not (ch Like "[A-Za-z0-9]")
 End Function
 
-' æ‹¡å¼µã‚†ã‚‹ã‚ä¸€è‡´ï¼ˆOptionså¯¾å¿œï¼‰
-' Options: "nofuzzy;word;min=4" ç­‰
+' Šg’£‚ä‚é‚ßˆê’viOptions‘Î‰j
+' Options: "nofuzzy;word;min=4" “™
 Private Function FuzzyContainsEx(ByVal textNorm As String, ByVal patternNorm As String, ByVal options As String) As Boolean
     Dim opt As String: opt = LCase$(options)
     Dim allowFuzzy As Boolean: allowFuzzy = (InStr(opt, "nofuzzy") = 0)
@@ -409,19 +441,19 @@ Private Function FuzzyContainsEx(ByVal textNorm As String, ByVal patternNorm As 
     End If
 End Function
 
-' å¾Œæ–¹äº’æ›ãƒ©ãƒƒãƒ‘ãƒ¼
+' Œã•ûŒİŠ·ƒ‰ƒbƒp[
 Private Function FuzzyContains(ByVal textNorm As String, ByVal patternNorm As String) As Boolean
     FuzzyContains = FuzzyContainsEx(textNorm, patternNorm, "")
 End Function
 
-' --- Patterns åˆ†å‰²ï¼šç”¨é€”åˆ¥ã«2ç¨® ---
-' A) ãƒˆãƒ¼ã‚¯ãƒ³ç”¨é€”ï¼ˆOR/ANDå‘ã‘ï¼‰ï¼šç©ºç™½ã‚‚åŒºåˆ‡ã‚Š
+' --- Patterns •ªŠ„F—p“r•Ê‚É2í ---
+' A) ƒg[ƒNƒ“—p“riOR/ANDŒü‚¯jF‹ó”’‚à‹æØ‚è
 Private Function ParsePatternsTokens(ByVal patStr As String) As Variant
     Dim s As String, parts As Variant, out() As String, i As Long, p As String
     s = CStr(patStr)
     On Error Resume Next: s = StrConv(s, vbNarrow): On Error GoTo 0
     s = Replace(s, vbCrLf, ","): s = Replace(s, vbCr, ","): s = Replace(s, vbLf, ",")
-    s = Replace(s, "ã€", ","): s = Replace(s, "ï¼Œ", ",")
+    s = Replace(s, "A", ","): s = Replace(s, "C", ",")
     s = Replace(s, ";", ",")
     s = Replace(s, " ", ",")
     Do While InStr(s, ",,") > 0: s = Replace(s, ",,", ","): Loop
@@ -434,7 +466,7 @@ Private Function ParsePatternsTokens(ByVal patStr As String) As Variant
         p = Trim$(CStr(parts(i))): out(i) = p
     Next i
 
-    ' ã™ã¹ã¦ç©ºãªã‚‰ç©ºé…åˆ—ã‚’è¿”ã™
+    ' ‚·‚×‚Ä‹ó‚È‚ç‹ó”z—ñ‚ğ•Ô‚·
     If UBound(out) >= LBound(out) Then
         Dim allEmpty As Boolean: allEmpty = True
         For i = LBound(out) To UBound(out)
@@ -445,13 +477,13 @@ Private Function ParsePatternsTokens(ByVal patStr As String) As Variant
     ParsePatternsTokens = out
 End Function
 
-' B) ãƒ•ãƒ¬ãƒ¼ã‚ºç”¨é€”ï¼ˆPHRASEå‘ã‘ï¼‰ï¼šç©ºç™½ã¯ä¿æŒã€ã‚«ãƒ³ãƒ/æ”¹è¡Œã®ã¿ã§åˆ†å‰²
+' B) ƒtƒŒ[ƒY—p“riPHRASEŒü‚¯jF‹ó”’‚Í•ÛAƒJƒ“ƒ}/‰üs‚Ì‚İ‚Å•ªŠ„
 Private Function ParsePatternsPhrases(ByVal patStr As String) As Variant
     Dim s As String, parts As Variant, out() As String, i As Long, p As String
     s = CStr(patStr)
     On Error Resume Next: s = StrConv(s, vbNarrow): On Error GoTo 0
     s = Replace(s, vbCrLf, ","): s = Replace(s, vbCr, ","): s = Replace(s, vbLf, ",")
-    s = Replace(s, "ã€", ","): s = Replace(s, "ï¼Œ", ",")
+    s = Replace(s, "A", ","): s = Replace(s, "C", ",")
     s = Replace(s, ";", ",")
     Do While InStr(s, ",,") > 0: s = Replace(s, ",,", ","): Loop
     If Left$(s, 1) = "," Then s = Mid$(s, 2)
@@ -463,7 +495,7 @@ Private Function ParsePatternsPhrases(ByVal patStr As String) As Variant
         p = Trim$(CStr(parts(i))): out(i) = p
     Next i
 
-    ' ã™ã¹ã¦ç©ºãªã‚‰ç©ºé…åˆ—ã‚’è¿”ã™
+    ' ‚·‚×‚Ä‹ó‚È‚ç‹ó”z—ñ‚ğ•Ô‚·
     If UBound(out) >= LBound(out) Then
         Dim allEmpty As Boolean: allEmpty = True
         For i = LBound(out) To UBound(out)
@@ -474,7 +506,7 @@ Private Function ParsePatternsPhrases(ByVal patStr As String) As Variant
     ParsePatternsPhrases = out
 End Function
 
-' --- DecorConfig èª­ã¿è¾¼ã¿ ---
+' --- DecorConfig “Ç‚İ‚İ ---
 Private Function BuildDecorRules() As Collection
     Const CFG_SHEET_NAME As String = "DecorConfig"
 
@@ -512,9 +544,9 @@ Private Function BuildDecorRules() As Collection
         If Len(Trim$(patStr)) = 0 Then
             pats = Array()
         ElseIf mt = "phrase" Then
-            pats = ParsePatternsPhrases(patStr)     ' ç©ºç™½ä¿æŒ
+            pats = ParsePatternsPhrases(patStr)     ' ‹ó”’•Û
         Else
-            pats = ParsePatternsTokens(patStr)      ' ç©ºç™½ã‚‚åŒºåˆ‡ã‚Š
+            pats = ParsePatternsTokens(patStr)      ' ‹ó”’‚à‹æØ‚è
         End If
 
         Dim rule As Object: Set rule = CreateObject("Scripting.Dictionary")
@@ -532,7 +564,7 @@ NextRow:
     Set BuildDecorRules = rules
 End Function
 
-' --- ãƒ«ãƒ¼ãƒ«å‘½ä¸­åˆ¤å®šï¼ˆOptions/MatchTypeå¯¾å¿œãƒ»çŸ­èªminè‡ªå‹•ç·©å’Œãƒ»ç©ºé…åˆ—ã‚¬ãƒ¼ãƒ‰ï¼‰ ---
+' --- ƒ‹[ƒ‹–½’†”»’èiOptions/MatchType‘Î‰E’ZŒêmin©“®ŠÉ˜aE‹ó”z—ñƒK[ƒhj ---
 Private Function RuleHit(ByVal srcNorm As String, ByVal rule As Object) As Boolean
     Dim mt As String, opts As String, pats As Variant, i As Long, p As String
     Dim hasShort As Boolean
@@ -557,12 +589,12 @@ Private Function RuleHit(ByVal srcNorm As String, ByVal rule As Object) As Boole
         For i = SafeLBound(pats) To SafeUBound(pats)
             p = NormalizeForMatch(CStr(pats(i)))
             If Len(p) > 0 Then
-                ' â˜…çŸ­èªã¯å¢ƒç•Œã‚„æºã‚Œã‚’ã•ã‚‰ã«ç·©å’Œ
+                ' š’ZŒê‚Í‹«ŠE‚â—h‚ê‚ğ‚³‚ç‚ÉŠÉ˜a
                 If Len(p) <= 2 Then
                     If ContainsLoose(srcNorm, p) Then RuleHit = True: Exit Function
                 Else
                     Dim localOpts As String: localOpts = opts
-                    ' â†“ ã“ã“ã§é€šå¸¸åˆ¤å®šï¼ˆnofuzzyç­‰ã¯ãã®ã¾ã¾ï¼‰
+                    ' « ‚±‚±‚Å’Êí”»’èinofuzzy“™‚Í‚»‚Ì‚Ü‚Üj
                     If FuzzyContainsEx(srcNorm, p, localOpts) Then RuleHit = True: Exit Function
                 End If
             End If
@@ -582,7 +614,7 @@ skipAND:
         For i = SafeLBound(pats) To SafeUBound(pats)
             p = NormalizeForMatch(CStr(pats(i)))
             If Len(p) > 0 Then
-                ' â˜…çŸ­èªã¯ç·©å’Œã€ãƒ•ãƒ¬ãƒ¼ã‚ºã¯ nofuzzy ã§å³å¯†
+                ' š’ZŒê‚ÍŠÉ˜aAƒtƒŒ[ƒY‚Í nofuzzy ‚ÅŒµ–§
                 If Len(p) <= 2 Then
                     If ContainsLoose(srcNorm, p) Then RuleHit = True: Exit Function
                 Else
@@ -605,9 +637,9 @@ skipAND:
     End Select
 End Function
 
-' --- æ—¢å­˜è£…é£¾ã ã‘ã‚’å‰¥ãŒã—ã¦ã‹ã‚‰ã€ä»Šã®ãƒ«ãƒ¼ãƒ«ã§ä»˜ã‘ç›´ã™ ---
+' --- Šù‘¶‘•ü‚¾‚¯‚ğ”‚ª‚µ‚Ä‚©‚çA¡‚Ìƒ‹[ƒ‹‚Å•t‚¯’¼‚· ---
 Private Function StripDecorations(ByVal s As String, ByVal rules As Collection) As String
-    Dim result As String: result = Trim$(CStr(s))   ' å‰å¾Œç©ºç™½ã‚’æ­£è¦åŒ–
+    Dim result As String: result = Trim$(CStr(s))   ' ‘OŒã‹ó”’‚ğ³‹K‰»
     Dim rule As Object, frag As String, rm As String, pos As String
 
     For Each rule In rules
@@ -647,7 +679,7 @@ Private Function StripDecorations(ByVal s As String, ByVal rules As Collection) 
     StripDecorations = Trim$(result)
 End Function
 
-' --- è£…é£¾é©ç”¨ï¼ˆé‡è¤‡é˜²æ­¢ãƒ»æ—¢å­˜è£…é£¾å‰¥é›¢ãƒ»PHRASE/Optionså¯¾å¿œï¼‰ ---
+' --- ‘•ü“K—pid•¡–h~EŠù‘¶‘•ü”—£EPHRASE/Options‘Î‰j ---
 Private Sub ApplyDecorations(ByVal topRow As Long, ByVal matchedKeyRaw As String)
     On Error GoTo EH
 
@@ -690,7 +722,7 @@ Private Sub ApplyDecorations(ByVal topRow As Long, ByVal matchedKeyRaw As String
     Dim hasExclusive As Boolean: hasExclusive = False
     Dim ropts As String
     
-    ' --- å…ˆã«é™¤å¤–å‘½ä¸­ãŒã‚ã‚‹ã‹ç¢ºèª ---
+    ' --- æ‚ÉœŠO–½’†‚ª‚ ‚é‚©Šm”F ---
     Dim isExcluded As Boolean: isExcluded = False
     For Each rule In rules
         If RuleHit(srcNorm, rule) Then
@@ -702,7 +734,7 @@ Private Sub ApplyDecorations(ByVal topRow As Long, ByVal matchedKeyRaw As String
         End If
     Next rule
     If isExcluded Then
-        ' æ—¢å­˜è£…é£¾ãŒã‚ã‚Œã°å‰¥ãŒã™ã ã‘ã§çµ‚äº†ï¼ˆå‰¥ãŒã—ãŸããªã‘ã‚Œã°ã“ã®2è¡Œã‚’ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆï¼‰
+        ' Šù‘¶‘•ü‚ª‚ ‚ê‚Î”‚ª‚·‚¾‚¯‚ÅI—¹i”‚ª‚µ‚½‚­‚È‚¯‚ê‚Î‚±‚Ì2s‚ğƒRƒƒ“ƒgƒAƒEƒgj
         Dim baseTextOnly As String
         baseTextOnly = StripDecorations(CStr(cell.Value), rules)
         cell.Value = baseTextOnly
@@ -710,7 +742,7 @@ Private Sub ApplyDecorations(ByVal topRow As Long, ByVal matchedKeyRaw As String
         Exit Sub
     End If
     
-    ' --- å…ˆã« exclusive å‘½ä¸­ã®æœ‰ç„¡ã ã‘ç¢ºèª ---
+    ' --- æ‚É exclusive –½’†‚Ì—L–³‚¾‚¯Šm”F ---
     For Each rule In rules
         If RuleHit(srcNorm, rule) Then
             If rule.Exists("options") Then ropts = LCase$(CStr(rule("options"))) Else ropts = ""
@@ -721,7 +753,7 @@ Private Sub ApplyDecorations(ByVal topRow As Long, ByVal matchedKeyRaw As String
         End If
     Next rule
     
-    ' --- æœ¬é©ç”¨ï¼šexclusiveãŒã‚ã‚Œã°ãã‚Œã ã‘ã€ç„¡ã‘ã‚Œã°å…¨éƒ¨ ---
+    ' --- –{“K—pFexclusive‚ª‚ ‚ê‚Î‚»‚ê‚¾‚¯A–³‚¯‚ê‚Î‘S•” ---
     For Each rule In rules
         If RuleHit(srcNorm, rule) Then
             If rule.Exists("options") Then ropts = LCase$(CStr(rule("options"))) Else ropts = ""
@@ -771,7 +803,7 @@ EH:
     Debug.Print "[Decor][ERR] row=", topRow, " err=", Err.Number, Err.Description
 End Sub
 
-'======================== ãƒ¦ãƒ¼ãƒ†ã‚£ãƒªãƒ†ã‚£ ========================
+'======================== ƒ†[ƒeƒBƒŠƒeƒB ========================
 Private Function PairTopRow(ByVal anyRow As Long) As Long
     If anyRow Mod 2 = 0 Then PairTopRow = anyRow Else PairTopRow = anyRow - 1
 End Function
@@ -849,10 +881,10 @@ Private Sub RefDebug_Stats(ByVal src As String, ByVal map34 As Object, ByVal map
     Dim k As Variant, c34 As Long, c43 As Long
     For Each k In map34.keys: c34 = c34 + map34(k).Count: Next k
     For Each k In map43.keys: c43 = c43 + map43(k).Count: Next k
-    Debug.Print "[RefLoad] src=" & src & " 3â†’4=" & c34 & "ä»¶ 4â†’3=" & c43 & "ä»¶"
+    Debug.Print "[RefLoad] src=" & src & " 3¨4=" & c34 & "Œ 4¨3=" & c43 & "Œ"
 End Sub
 
-'======================== è¨ºæ–­ï¼ˆä»»æ„ï¼‰ ========================
+'======================== f’fi”CˆÓj ========================
 Public Sub TraceDecorAtRow(ByVal topRow As Long)
     Dim belowRow As Long: belowRow = topRow + 1
     Dim rightTop As String, leftPair As String, srcNorm As String
@@ -877,3 +909,4 @@ Public Sub TraceDecorAtRow(ByVal topRow As Long)
     Next rule
     Debug.Print "----------------------------------------"
 End Sub
+
