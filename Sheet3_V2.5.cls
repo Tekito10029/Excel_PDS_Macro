@@ -680,16 +680,21 @@ Private Function StripDecorations(ByVal s As String, ByVal rules As Collection) 
 End Function
 
 ' --- 装飾適用（重複防止・既存装飾剥離・PHRASE/Options対応） ---
+' 装飾適用：exclude / exclusive / default_nohit を厳密に扱う完全版
+' - topRow        : 2行ペアの上段行
+' - matchedKeyRaw : 参照ヒット時のキー（未使用なら "" でOK）
 Private Sub ApplyDecorations(ByVal topRow As Long, ByVal matchedKeyRaw As String)
     On Error GoTo EH
 
     Dim belowRow As Long: belowRow = topRow + 1
     If belowRow > ROW_END Then Exit Sub
 
+    ' 判定に使う生値（右:上段先頭セル / 左:上段+下段の連結）
     Dim rightTop As String, leftPair As String
     rightTop = CStr(GetRowMergeTopLeft(Me, topRow, RIGHT_COL_START, RIGHT_COL_END).Value)
     leftPair = CStr(Me.Cells(topRow, LEFT_COL).Value) & CStr(Me.Cells(belowRow, LEFT_COL).Value)
 
+    ' マッチ用の正規化文字列（キー＋右上段＋左2行）
     Dim srcNorm As String
     srcNorm = NormalizeForMatch(matchedKeyRaw & " " & rightTop & " " & leftPair)
     If Len(srcNorm) = 0 Then
@@ -698,15 +703,17 @@ Private Sub ApplyDecorations(ByVal topRow As Long, ByVal matchedKeyRaw As String
         If Len(fallbackNorm) = 0 Then Exit Sub
         srcNorm = fallbackNorm
     End If
-
     Debug.Print "[Decor] row=", topRow, " srcNorm=[", srcNorm, "]"
 
+    ' 出力先：右側結合ブロックの「下段」の結合先頭セル
     Dim cell As Range
     Set cell = GetRowMergeTopLeft(Me, belowRow, RIGHT_COL_START, RIGHT_COL_END)
     If cell Is Nothing Then Exit Sub
 
+    ' ルール読み込み
     Dim rules As Collection: Set rules = BuildDecorRules()
 
+    ' 既存装飾の扱い：本文だけ抽出（または全消し）
     Dim existingRaw As String: existingRaw = CStr(cell.Value)
     Dim baseText As String
     If DECOR_CLEAR_BELOW_FIRST Then
@@ -715,90 +722,102 @@ Private Sub ApplyDecorations(ByVal topRow As Long, ByVal matchedKeyRaw As String
         baseText = StripDecorations(existingRaw, rules)
     End If
 
-    Dim toPrepend As String, toAppend As String
-    toPrepend = "": toAppend = ""
-
-    Dim rule As Object, hit As Boolean: hit = False
-    Dim hasExclusive As Boolean: hasExclusive = False
+    ' ---- 事前スキャン：exclude / exclusive / 通常ヒット有無の確定 ----
     Dim ropts As String
-    
-    ' --- 先に除外命中があるか確認 ---
-    Dim isExcluded As Boolean: isExcluded = False
-    For Each rule In rules
-        If RuleHit(srcNorm, rule) Then
-            ropts = LCase$(IIf(rule.Exists("options"), CStr(rule("options")), ""))
+    Dim hasExclusive As Boolean: hasExclusive = False
+    Dim anyNormalHit As Boolean: anyNormalHit = False
+    Dim isExcluded As Boolean:    isExcluded = False
+
+    Dim rScan As Object
+    For Each rScan In rules
+        If RuleHit(srcNorm, rScan) Then
+            ropts = LCase$(IIf(rScan.Exists("options"), CStr(rScan("options")), ""))
             If InStr(ropts, "exclude") > 0 Then
                 isExcluded = True
                 Exit For
             End If
+            If InStr(ropts, "exclusive") > 0 Then hasExclusive = True
+            ' default_nohit 以外が当たれば通常ヒット
+            If Not (rScan.Exists("pos") And LCase$(CStr(rScan("pos"))) = "default_nohit") Then
+                anyNormalHit = True
+            End If
         End If
-    Next rule
+    Next rScan
+
+    ' ---- 除外ヒット：何も付けずに（必要なら装飾だけ剥がして）終了 ----
     If isExcluded Then
-        ' 既存装飾があれば剥がすだけで終了（剥がしたくなければこの2行をコメントアウト）
-        Dim baseTextOnly As String
-        baseTextOnly = StripDecorations(CStr(cell.Value), rules)
-        cell.Value = baseTextOnly
+        cell.Value = StripDecorations(CStr(cell.Value), rules)
         Debug.Print "[Decor] excluded (no decoration)"
         Exit Sub
     End If
-    
-    ' --- 先に exclusive 命中の有無だけ確認 ---
-    For Each rule In rules
-        If RuleHit(srcNorm, rule) Then
-            If rule.Exists("options") Then ropts = LCase$(CStr(rule("options"))) Else ropts = ""
-            If InStr(ropts, "exclusive") > 0 Then
-                hasExclusive = True
-                Exit For
-            End If
-        End If
-    Next rule
-    
-    ' --- 本適用：exclusiveがあればそれだけ、無ければ全部 ---
-    For Each rule In rules
-        If RuleHit(srcNorm, rule) Then
-            If rule.Exists("options") Then ropts = LCase$(CStr(rule("options"))) Else ropts = ""
-            If hasExclusive And InStr(ropts, "exclusive") = 0 Then GoTo NextRule
-    
-            If rule.Exists("before_text") Then AppendUnique toPrepend, CStr(rule("before_text")), baseText
-            If rule.Exists("after_text") Then AppendUnique toAppend, CStr(rule("after_text")), baseText
-            If rule.Exists("text") Then
-                Dim posVal As String
-                If rule.Exists("pos") Then posVal = LCase$(CStr(rule("pos"))) Else posVal = "after"
-                Select Case posVal
-                    Case "before": AppendUnique toPrepend, CStr(rule("text")), baseText
-                    Case "after":  AppendUnique toAppend, CStr(rule("text")), baseText
-                    Case "both":   AppendUnique toPrepend, CStr(rule("text")), baseText
-                                   AppendUnique toAppend, CStr(rule("text")), baseText
-                End Select
-            End If
-        End If
-NextRule:
-    Next rule
 
+    ' ---- 適用フェーズ ----
+    Dim toPrepend As String, toAppend As String
+    toPrepend = "": toAppend = ""
 
-    If Not hit Then
-        Dim hasDefault As Boolean: hasDefault = False
+    Dim rule As Object, posVal As String
+
+    If anyNormalHit Then
+        ' 通常命中があるとき：default_nohit とグローバル既定は一切付けない
+        For Each rule In rules
+            If RuleHit(srcNorm, rule) Then
+                ' 未ヒット専用はスキップ
+                If rule.Exists("pos") Then
+                    If LCase$(CStr(rule("pos"))) = "default_nohit" Then GoTo NextRule1
+                End If
+                ropts = LCase$(IIf(rule.Exists("options"), CStr(rule("options")), ""))
+                ' exclusive が一つでもあれば exclusive 以外は無視
+                If hasExclusive And InStr(ropts, "exclusive") = 0 Then GoTo NextRule1
+
+                ' 装飾追加（重複は AppendUnique で抑止）
+                If rule.Exists("before_text") Then AppendUnique toPrepend, CStr(rule("before_text")), baseText
+                If rule.Exists("after_text") Then AppendUnique toAppend, CStr(rule("after_text")), baseText
+
+                ' 旧式 text + pos（互換）
+                If rule.Exists("text") Then
+                    posVal = LCase$(IIf(rule.Exists("pos"), CStr(rule("pos")), "after"))
+                    Select Case posVal
+                        Case "before": AppendUnique toPrepend, CStr(rule("text")), baseText
+                        Case "after":  AppendUnique toAppend, CStr(rule("text")), baseText
+                        Case "both":   AppendUnique toPrepend, CStr(rule("text")), baseText
+                                       AppendUnique toAppend, CStr(rule("text")), baseText
+                    End Select
+                End If
+            End If
+NextRule1:
+        Next rule
+
+    Else
+        ' 通常命中ゼロ：default_nohit 行を優先、無ければグローバル既定
+        Dim usedDefaultRule As Boolean: usedDefaultRule = False
+
         For Each rule In rules
             If rule.Exists("pos") Then
                 If LCase$(CStr(rule("pos"))) = "default_nohit" Then
-                    hasDefault = True
-                    If rule.Exists("before_text") Then AppendUnique toPrepend, CStr(rule("before_text")), baseText
-                    If rule.Exists("after_text") Then AppendUnique toAppend, CStr(rule("after_text")), baseText
+                    If RuleHit(srcNorm, rule) Then
+                        If rule.Exists("before_text") Then AppendUnique toPrepend, CStr(rule("before_text")), baseText
+                        If rule.Exists("after_text") Then AppendUnique toAppend, CStr(rule("after_text")), baseText
+                        usedDefaultRule = True
+                    End If
                 End If
             End If
         Next rule
 
-        If Not hasDefault Then
-            AppendUnique toPrepend, DECOR_NOHIT_BEFORE_TEXT, baseText
-            AppendUnique toAppend, DECOR_NOHIT_AFTER_TEXT, baseText
+        If Not usedDefaultRule Then
+            If Len(DECOR_NOHIT_BEFORE_TEXT) > 0 Then AppendUnique toPrepend, DECOR_NOHIT_BEFORE_TEXT, baseText
+            If Len(DECOR_NOHIT_AFTER_TEXT) > 0 Then AppendUnique toAppend, DECOR_NOHIT_AFTER_TEXT, baseText
         End If
     End If
 
+    ' 書き込み（装飾も本文も空なら何もしない）
     If Len(toPrepend) = 0 And Len(toAppend) = 0 And Len(baseText) = 0 Then Exit Sub
 
     cell.Value = toPrepend & baseText & toAppend
-    Debug.Print "[Decor] write row=", topRow, " val=[", toPrepend & baseText & toAppend, "]  hit=", hit
+    Debug.Print "[Decor] write row=", topRow, _
+                " hitNormal=", anyNormalHit, " excl=", hasExclusive, _
+                " val=[", toPrepend & baseText & toAppend, "]"
     Exit Sub
+
 EH:
     Debug.Print "[Decor][ERR] row=", topRow, " err=", Err.Number, Err.Description
 End Sub
