@@ -1,5 +1,5 @@
 Attribute VB_Name = "Module3"
-'V_1.0 機能の実装
+'V_1.1 新規作成時ラベル削除実装
 Option Explicit
 
 Private Const ORIGINAL_BOOK_NAME As String = "原紙自動入力.xlsm"
@@ -78,7 +78,11 @@ Public Sub 原紙から新規ブック作成()
 
     srcWb.SaveCopyAs newPath
     Set newWb = Workbooks.Open(newPath)
-
+    
+    srcWb.Activate
+    activeWs.Activate
+    DeleteAllBracesAndLabels_WithMirror_AndWriteTEXTdd
+    
     ResetOriginalForm srcWb, activeWs
 
     MsgBox "新しいブックを作成しました。" & vbCrLf & newPath, vbInformation
