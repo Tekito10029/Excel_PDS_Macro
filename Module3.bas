@@ -2,7 +2,7 @@ Attribute VB_Name = "Module3"
 'V_1.1 新規作成時ラベル削除実装
 Option Explicit
 
-Private Const ORIGINAL_BOOK_NAME As String = "原紙自動入力.xlsm"
+Private Const ORIGINAL_BOOK_NAME As String = ""
 
 Public Sub 原紙から新規ブック作成()
 
@@ -63,8 +63,26 @@ Public Sub 原紙から新規ブック作成()
         Exit Sub
     End If
 
-    baseName = ReplaceLastUnderscoreSuffix(originalBaseName, l1Value)
+    Debug.Print "saveFolder=[" & saveFolder & "]"
+    Debug.Print "originalBaseName=[" & originalBaseName & "]"
+    Debug.Print "l1Value=[" & l1Value & "]"
+    Debug.Print "ext=[" & ext & "]"
+    
+    Dim p As Long
+    
+    p = InStrRev(originalBaseName, "_")
+    
+    If p > 0 Then
+        baseName = Left$(originalBaseName, p) & l1Value
+    Else
+        baseName = originalBaseName & "_" & l1Value
+    End If
+    
+    Debug.Print "baseName=[" & baseName & "]"
+    
     newPath = GetUniqueFilePath(saveFolder, baseName, ext)
+    
+    Debug.Print "newPath=[" & newPath & "]"
 
     confirmMsg = BuildConfirmMessage(activeWs, baseName, ext, saveFolder)
 
@@ -151,16 +169,35 @@ End Function
 Private Function GetUniqueFilePath(ByVal folderPath As String, ByVal baseName As String, ByVal ext As String) As String
     Dim path As String
     Dim i As Long
+    Dim fso As Object
+
+    folderPath = Trim$(folderPath)
+    baseName = Trim$(baseName)
+    ext = Trim$(ext)
+
+    If Len(folderPath) = 0 Then
+        Err.Raise vbObjectError + 1100, , "保存先フォルダが空です。"
+    End If
+
+    If Len(baseName) = 0 Then
+        Err.Raise vbObjectError + 1101, , "ファイル名が空です。"
+    End If
+
+    If Len(ext) = 0 Then
+        Err.Raise vbObjectError + 1102, , "拡張子が取得できません。"
+    End If
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
 
     path = folderPath & "\" & baseName & ext
-    If Dir$(path) = "" Then
+    If Not fso.FileExists(path) Then
         GetUniqueFilePath = path
         Exit Function
     End If
 
     For i = 2 To 9999
         path = folderPath & "\" & baseName & "_" & CStr(i) & ext
-        If Dir$(path) = "" Then
+        If Not fso.FileExists(path) Then
             GetUniqueFilePath = path
             Exit Function
         End If
