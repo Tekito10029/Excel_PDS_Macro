@@ -1,5 +1,5 @@
 Attribute VB_Name = "Module3"
-'V_1.1 V‹Kì¬ƒ‰ƒxƒ‹íœÀ‘•
+'V_1.2 è“®‚Å‰Šú‰»‚ğÀ‘•
 Option Explicit
 
 Private Const ORIGINAL_BOOK_NAME As String = "Œ´†©“®“ü—Í.xlsm"
