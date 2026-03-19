@@ -2,7 +2,7 @@ Attribute VB_Name = "Module3"
 'V_1.1 新規作成時ラベル削除実装
 Option Explicit
 
-Private Const ORIGINAL_BOOK_NAME As String = ""
+Private Const ORIGINAL_BOOK_NAME As String = "原紙自動入力.xlsm"
 
 Public Sub 原紙から新規ブック作成()
 
@@ -108,6 +108,54 @@ Public Sub 原紙から新規ブック作成()
 
 EH:
     MsgBox "新規ブック作成中にエラーが発生しました。" & vbCrLf & _
+           "No: " & Err.Number & vbCrLf & _
+           Err.Description, vbExclamation
+End Sub
+
+Public Sub 原紙を手動初期化()
+
+    On Error GoTo EH
+
+    Dim srcWb As Workbook
+    Dim ws As Worksheet
+    Dim msg As String
+
+    Set srcWb = ThisWorkbook
+
+    If Not IsOriginalBook(srcWb) Then
+        MsgBox "この機能は原紙ブックでのみ実行できます。", vbExclamation
+        Exit Sub
+    End If
+
+    If srcWb.ActiveSheet Is Nothing Then
+        MsgBox "アクティブシートを取得できませんでした。", vbExclamation
+        Exit Sub
+    End If
+
+    If Not TypeOf srcWb.ActiveSheet Is Worksheet Then
+        MsgBox "アクティブシートがワークシートではありません。", vbExclamation
+        Exit Sub
+    End If
+
+    Set ws = srcWb.ActiveSheet
+
+    msg = "現在のシートを手動で初期化します。" & vbCrLf & vbCrLf & _
+          "対象シート: " & ws.Name & vbCrLf & vbCrLf & _
+          "初期化対象:" & vbCrLf & _
+          GetInitTargetSummary(ws) & vbCrLf & vbCrLf & _
+          "実行しますか？"
+
+    If MsgBox(msg, vbQuestion + vbYesNo + vbDefaultButton2, "手動初期化確認") <> vbYes Then
+        Exit Sub
+    End If
+
+    ResetOriginalForm srcWb, ws
+
+    MsgBox "初期化が完了しました。", vbInformation
+    Exit Sub
+
+EH:
+    MsgBox "手動初期化中にエラーが発生しました。" & vbCrLf & _
            "No: " & Err.Number & vbCrLf & _
            Err.Description, vbExclamation
 End Sub
