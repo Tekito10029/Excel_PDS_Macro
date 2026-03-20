@@ -2,7 +2,7 @@ Attribute VB_Name = "Module3"
 'V_1.5 原紙を一本化 製造番号を自動採番し製造番号ブックに自動入力
 Option Explicit
 
-Private Const ORIGINAL_BOOK_NAME As String = "原紙自動入力.xlsm"
+Private Const ORIGINAL_BOOK_NAME As String = "沓用製造表_原紙自動入力.xlsm"
 Private Const COMPANY_MASTER_SHEET As String = "会社設定"
 Private Const COMPANY_NAME_CELL As String = "C3"
 
@@ -373,7 +373,7 @@ Private Function GetInitTargetSummary(ByVal ws As Worksheet) As String
     End If
 
     If IsChecked(ws.Range("Z3").Value) Then
-        lines = lines & "・物件名（C20）" & vbCrLf
+        lines = lines & "・物件名・備考欄（C20:F21）" & vbCrLf
     End If
 
     If IsChecked(ws.Range("Z4").Value) Then
@@ -396,19 +396,24 @@ Private Sub ResetOriginalForm(ByVal wb As Workbook, ByVal ws As Worksheet)
 
     Application.EnableEvents = False
     Application.ScreenUpdating = False
-
+    
+    '製造票番号
     If IsChecked(ws.Range("Z1").Value) Then
         SafeClearRange ws.Range("L1")
     End If
 
+    '品名・サイズ
     If IsChecked(ws.Range("Z2").Value) Then
         SafeClearRange ws.Range("D6:L19")
     End If
 
+    '物件名・備考欄
     If IsChecked(ws.Range("Z3").Value) Then
         SafeClearRange ws.Range("C20")
+        SafeClearRange ws.Range("F21")
     End If
-
+    
+    '入荷日・納期
     If IsChecked(ws.Range("Z4").Value) Then
         SafeClearRange ws.Range("K3:K4")
     End If
