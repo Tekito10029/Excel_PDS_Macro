@@ -351,6 +351,7 @@ End Sub
 '========================
 Private Function ResolveTargetCell(ByVal ws As Worksheet, ByVal rng As Range) As Range
     Dim tgt As Range
+
     Select Case WRITE_WHERE
         Case 1
             Set tgt = TryGetNamedRange(ws, TARGET_NAMED_RANGE)
@@ -359,11 +360,18 @@ Private Function ResolveTargetCell(ByVal ws As Worksheet, ByVal rng As Range) As
                 Set tgt = ws.Range(TARGET_CELL_ADDR)
                 On Error GoTo 0
             End If
+
         Case 2
-            Set tgt = rng.Cells(1, 1)
+            If Not rng Is Nothing Then
+                Set tgt = rng.Cells(1, 1)
+            End If
+
         Case Else
-            Set tgt = rng.Cells(1, 1)
+            If Not rng Is Nothing Then
+                Set tgt = rng.Cells(1, 1)
+            End If
     End Select
+
     Set ResolveTargetCell = tgt
 End Function
 
@@ -492,12 +500,29 @@ End Sub
 '========================
 Private Sub SetTargetToTEXTdd(ByVal ws As Worksheet, ByVal rng As Range)
     Dim tgt As Range
-    Set tgt = ResolveTargetCell(ws, rng)
-    If tgt Is Nothing Then
-        MsgBox "書き込み先セルが見つかりませんでした。WRITE_WHERE / 名前付き範囲 / アドレスを確認してください。", vbExclamation
+
+    If ws Is Nothing Then
+        MsgBox "ws が Nothing です。", vbExclamation
         Exit Sub
     End If
-    tgt.FormulaLocal = "=TEXT(K4,""d"")"
+
+    If rng Is Nothing Then
+        MsgBox "rng が Nothing です。", vbExclamation
+        Exit Sub
+    End If
+
+    Set tgt = ResolveTargetCell(ws, rng)
+
+    If tgt Is Nothing Then
+        MsgBox "書き込み先セルが見つかりません。" & vbCrLf & _
+               "WRITE_WHERE=" & WRITE_WHERE & vbCrLf & _
+               "TARGET_NAMED_RANGE=" & TARGET_NAMED_RANGE & vbCrLf & _
+               "TARGET_CELL_ADDR=" & TARGET_CELL_ADDR & vbCrLf & _
+               "Sheet=" & ws.Name, vbExclamation
+        Exit Sub
+    End If
+
+    tgt.FormulaLocal = "=TEXT(K4,""d"")&IF(ISNUMBER(SEARCH(""久里浜"",F21)),""-別口"","""")"
 End Sub
 
 '========================

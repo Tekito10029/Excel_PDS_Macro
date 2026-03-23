@@ -27,6 +27,10 @@ Private Const DECOR_NOHIT_AFTER_TEXT  As String = "t"   ' 動作確認用。不要なら空
 Private Const UNMATCHED_LEFT_UPPER As String = "62"
 Private Const UNMATCHED_LEFT_LOWER As String = "018"
 
+Private Sub ComboBox1_Change()
+
+End Sub
+
 '======================== Worksheet_Change ========================
 Private Sub Worksheet_Change(ByVal Target As Range)
     On Error GoTo CleanUp
@@ -539,7 +543,7 @@ Private Function BuildDecorRules() As Collection
         rm = LCase$(Trim$(CStr(ws.Cells(r, 6).Value)))        ' F RemoveAt
         opts = CStr(ws.Cells(r, 7).Value)                     ' G Options
 
-        If Len(Trim$(patStr & beforeTxt & afterTxt & posStr & mt & rm & opts)) = 0 Then GoTo NextRow
+        If Len(Trim$(patStr & beforeTxt & afterTxt & posStr & mt & rm & opts)) = 0 Then GoTo nextRow
 
         If Len(Trim$(patStr)) = 0 Then
             pats = Array()
@@ -558,7 +562,7 @@ Private Function BuildDecorRules() As Collection
         If Len(rm) > 0 Then rule("remove_at") = rm
         If Len(opts) > 0 Then rule("options") = opts
         rules.add rule
-NextRow:
+nextRow:
     Next r
 
     Set BuildDecorRules = rules

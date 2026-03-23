@@ -2,7 +2,7 @@ Attribute VB_Name = "Module3"
 'V_1.5 原紙を一本化 製造番号を自動採番し製造番号ブックに自動入力
 Option Explicit
 
-Private Const ORIGINAL_BOOK_NAME As String = "沓用製造表_原紙自動入力.xlsm"
+Private Const ORIGINAL_BOOK_NAME As String = "☆沓用製造表_原紙自動入力.xlsm"
 Private Const COMPANY_MASTER_SHEET As String = "会社設定"
 Private Const COMPANY_NAME_CELL As String = "C3"
 
