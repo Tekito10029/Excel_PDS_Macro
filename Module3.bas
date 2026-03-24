@@ -10,6 +10,101 @@ Private Const SETTINGS_SHEET_NAME As String = "設定"
 Private Const LEDGER_PATH_CELL As String = "B1"
 Private Const LEDGER_SHEET_CELL As String = "B2"
 
+
+
+' === レイアウト可変対応（名前付き範囲優先 / 固定番地フォールバック） ===
+Private Const NR_COMPANY_NAME As String = "原紙_会社名"
+Private Const NR_K3_DATE As String = "原紙_基準日"
+Private Const NR_L1_ORDERNO As String = "原紙_製造番号"
+Private Const NR_DETAIL_BLOCK As String = "原紙_明細"
+Private Const NR_PROJECT_NAME As String = "原紙_物件名"
+Private Const NR_DELIVERY_NOTE As String = "原紙_備考"
+Private Const NR_DATE_BLOCK As String = "原紙_日付帯"
+Private Const NR_INIT_CHECK_1 As String = "原紙_初期化チェック1"
+Private Const NR_INIT_CHECK_2 As String = "原紙_初期化チェック2"
+Private Const NR_INIT_CHECK_3 As String = "原紙_初期化チェック3"
+Private Const NR_INIT_CHECK_4 As String = "原紙_初期化チェック4"
+
+Private Function ResolveNamedRange(ByVal ws As Worksheet, ByVal nm As String) As Range
+    On Error Resume Next
+    Set ResolveNamedRange = ws.Range(nm)
+    If ResolveNamedRange Is Nothing Then Set ResolveNamedRange = ThisWorkbook.Names(nm).RefersToRange
+    On Error GoTo 0
+End Function
+
+Private Function ResolveLayoutCell(ByVal ws As Worksheet, ByVal nm As String, ByVal fallbackAddr As String) As Range
+    Dim r As Range
+    Set r = ResolveNamedRange(ws, nm)
+    If r Is Nothing Then
+        On Error Resume Next
+        Set r = ws.Range(fallbackAddr)
+        On Error GoTo 0
+    End If
+    If Not r Is Nothing Then Set ResolveLayoutCell = r.Cells(1, 1)
+End Function
+
+Private Function ResolveLayoutRange(ByVal ws As Worksheet, ByVal nm As String, ByVal fallbackAddr As String) As Range
+    Dim r As Range
+    Set r = ResolveNamedRange(ws, nm)
+    If r Is Nothing Then
+        On Error Resume Next
+        Set r = ws.Range(fallbackAddr)
+        On Error GoTo 0
+    End If
+    Set ResolveLayoutRange = r
+End Function
+
+Private Function CompanyNameCell(ByVal ws As Worksheet) As Range
+    Set CompanyNameCell = ResolveLayoutCell(ws, NR_COMPANY_NAME, COMPANY_NAME_CELL)
+End Function
+
+Private Function K3DateCell(ByVal ws As Worksheet) As Range
+    Set K3DateCell = ResolveLayoutCell(ws, NR_K3_DATE, "K3")
+End Function
+
+Private Function L1OrderNoCell(ByVal ws As Worksheet) As Range
+    Set L1OrderNoCell = ResolveLayoutCell(ws, NR_L1_ORDERNO, "L1")
+End Function
+
+Private Function DetailBlockRange(ByVal ws As Worksheet) As Range
+    Set DetailBlockRange = ResolveLayoutRange(ws, NR_DETAIL_BLOCK, "D6:L19")
+End Function
+
+Private Function ProjectNameCell(ByVal ws As Worksheet) As Range
+    Set ProjectNameCell = ResolveLayoutCell(ws, NR_PROJECT_NAME, "C20")
+End Function
+
+Private Function DeliveryNoteCell(ByVal ws As Worksheet) As Range
+    Set DeliveryNoteCell = ResolveLayoutCell(ws, NR_DELIVERY_NOTE, "F21")
+End Function
+
+Private Function DateBlockRange(ByVal ws As Worksheet) As Range
+    Set DateBlockRange = ResolveLayoutRange(ws, NR_DATE_BLOCK, "K3:K4")
+End Function
+
+Private Function InitCheckCell(ByVal ws As Worksheet, ByVal indexNo As Long) As Range
+    Select Case indexNo
+        Case 1: Set InitCheckCell = ResolveLayoutCell(ws, NR_INIT_CHECK_1, "Z1")
+        Case 2: Set InitCheckCell = ResolveLayoutCell(ws, NR_INIT_CHECK_2, "Z2")
+        Case 3: Set InitCheckCell = ResolveLayoutCell(ws, NR_INIT_CHECK_3, "Z3")
+        Case 4: Set InitCheckCell = ResolveLayoutCell(ws, NR_INIT_CHECK_4, "Z4")
+    End Select
+End Function
+
+Private Function InitCheckValue(ByVal ws As Worksheet, ByVal indexNo As Long) As Boolean
+    Dim c As Range
+    Set c = InitCheckCell(ws, indexNo)
+    If c Is Nothing Then Exit Function
+    InitCheckValue = IsChecked(c.Value)
+End Function
+
+Private Sub SetInitChecks(ByVal ws As Worksheet, ByVal newValue As Boolean)
+    Dim i As Long, c As Range
+    For i = 1 To 4
+        Set c = InitCheckCell(ws, i)
+        If Not c Is Nothing Then c.Value = newValue
+    Next i
+End Sub
 Public Sub 原紙から新規ブック作成()
 
     On Error GoTo EH
@@ -60,7 +155,7 @@ Public Sub 原紙から新規ブック作成()
         Exit Sub
     End If
 
-    companyName = Trim$(CStr(activeWs.Range(COMPANY_NAME_CELL).Value))
+    companyName = Trim$(CStr(CompanyNameCell(activeWs).Value))
     If Len(companyName) = 0 Then
         MsgBox "社名セル(" & COMPANY_NAME_CELL & ")が空です。", vbExclamation
         Exit Sub
@@ -80,7 +175,7 @@ Public Sub 原紙から新規ブック作成()
         Exit Sub
     End If
 
-    C3Value = Trim$(CStr(targetWs.Range("C3").Value))
+    C3Value = Trim$(CStr(CompanyNameCell(targetWs).Value))
     C3Value = NormalizeFileName(C3Value)
 
     If Len(C3Value) = 0 Then
@@ -88,12 +183,12 @@ Public Sub 原紙から新規ブック作成()
         Exit Sub
     End If
 
-    If Not IsDate(targetWs.Range("K3").Value) Then
+    If Not IsDate(K3DateCell(targetWs).Value) Then
         MsgBox "K3 に有効な日付が入っていないため採番できません。", vbExclamation
         Exit Sub
     End If
 
-    k3Date = CDate(targetWs.Range("K3").Value)
+    k3Date = CDate(K3DateCell(targetWs).Value)
 
     l1Value = GetNextOrderNoFromLedger(k3Date)
 
@@ -102,7 +197,7 @@ Public Sub 原紙から新規ブック作成()
         Exit Sub
     End If
 
-    targetWs.Range("L1").Value = l1Value
+    L1OrderNoCell(targetWs).Value = l1Value
 
     Debug.Print "companyName=[" & companyName & "]"
     Debug.Print "saveFolder=[" & saveFolder & "]"
@@ -206,7 +301,7 @@ Private Function GetVisibleSheetForFileName(ByVal wb As Workbook) As Worksheet
 
     For Each ws In wb.Worksheets
         If ws.Visible = xlSheetVisible Then
-            C3Text = Trim$(CStr(ws.Range("C3").Value))
+            C3Text = Trim$(CStr(CompanyNameCell(ws).Value))
             If Len(C3Text) > 0 Then
                 Set GetVisibleSheetForFileName = ws
                 Exit Function
@@ -364,19 +459,19 @@ Private Function GetInitTargetSummary(ByVal ws As Worksheet) As String
 
     lines = ""
 
-    If IsChecked(ws.Range("Z1").Value) Then
+    If InitCheckValue(ws, 1) Then
         lines = lines & "・製造票番号（L1）" & vbCrLf
     End If
 
-    If IsChecked(ws.Range("Z2").Value) Then
+    If InitCheckValue(ws, 2) Then
         lines = lines & "・品名・サイズ・員数・単価（D6:L19）" & vbCrLf
     End If
 
-    If IsChecked(ws.Range("Z3").Value) Then
+    If InitCheckValue(ws, 3) Then
         lines = lines & "・物件名・備考欄（C20:F21）" & vbCrLf
     End If
 
-    If IsChecked(ws.Range("Z4").Value) Then
+    If InitCheckValue(ws, 4) Then
         lines = lines & "・入荷日付・納期（K3:K4）" & vbCrLf
     End If
 
@@ -398,24 +493,24 @@ Private Sub ResetOriginalForm(ByVal wb As Workbook, ByVal ws As Worksheet)
     Application.ScreenUpdating = False
     
     '製造票番号
-    If IsChecked(ws.Range("Z1").Value) Then
-        SafeClearRange ws.Range("L1")
+    If InitCheckValue(ws, 1) Then
+        SafeClearRange L1OrderNoCell(ws)
     End If
 
     '品名・サイズ
-    If IsChecked(ws.Range("Z2").Value) Then
-        SafeClearRange ws.Range("D6:L19")
+    If InitCheckValue(ws, 2) Then
+        SafeClearRange DetailBlockRange(ws)
     End If
 
     '物件名・備考欄
-    If IsChecked(ws.Range("Z3").Value) Then
-        SafeClearRange ws.Range("C20")
-        SafeClearRange ws.Range("F21")
+    If InitCheckValue(ws, 3) Then
+        SafeClearRange ProjectNameCell(ws)
+        SafeClearRange DeliveryNoteCell(ws)
     End If
     
     '入荷日・納期
-    If IsChecked(ws.Range("Z4").Value) Then
-        SafeClearRange ws.Range("K3:K4")
+    If InitCheckValue(ws, 4) Then
+        SafeClearRange DateBlockRange(ws)
     End If
 
 ExitProc:
@@ -826,23 +921,23 @@ Public Sub 初期化チェックを一括切替()
 
     Set ws = ActiveSheet
 
-    allOn = CBool(ws.Range("Z1").Value) _
-         And CBool(ws.Range("Z2").Value) _
-         And CBool(ws.Range("Z3").Value) _
-         And CBool(ws.Range("Z4").Value)
+    allOn = InitCheckValue(ws, 1) _
+         And InitCheckValue(ws, 2) _
+         And InitCheckValue(ws, 3) _
+         And InitCheckValue(ws, 4)
 
     If allOn Then
-        ws.Range("Z1:Z4").Value = False
+        SetInitChecks ws, False
     Else
-        ws.Range("Z1:Z4").Value = True
+        SetInitChecks ws, True
     End If
 End Sub
 
 Public Sub 初期化チェックをすべてON()
-    ActiveSheet.Range("Z1:Z4").Value = True
+    SetInitChecks ActiveSheet, True
 End Sub
 
 Public Sub 初期化チェックをすべてOFF()
-    ActiveSheet.Range("Z1:Z4").Value = False
+    SetInitChecks ActiveSheet, False
 End Sub
 

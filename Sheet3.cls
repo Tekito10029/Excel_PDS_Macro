@@ -27,6 +27,57 @@ Private Const DECOR_NOHIT_AFTER_TEXT  As String = "t"   ' 動作確認用。不要なら空
 Private Const UNMATCHED_LEFT_UPPER As String = "62"
 Private Const UNMATCHED_LEFT_LOWER As String = "018"
 
+'=== レイアウト可変対応（名前付き範囲優先 / 固定番地フォールバック） ===
+Private Const NR_LEFT_INPUT As String = "AutoInputLeft"
+Private Const NR_RIGHT_OUTPUT As String = "AutoInputRight"
+
+Private Function ResolveSheetNamedRange(ByVal nm As String) As Range
+    On Error Resume Next
+    Set ResolveSheetNamedRange = Me.Range(nm)
+    If ResolveSheetNamedRange Is Nothing Then Set ResolveSheetNamedRange = ThisWorkbook.Names(nm).RefersToRange
+    On Error GoTo 0
+End Function
+
+Private Function LeftInputRange() As Range
+    Dim r As Range
+    Set r = ResolveSheetNamedRange(NR_LEFT_INPUT)
+    If r Is Nothing Then Set r = Me.Range(Me.Cells(ROW_START, LEFT_COL), Me.Cells(ROW_END, LEFT_COL))
+    Set LeftInputRange = r
+End Function
+
+Private Function RightOutputRange() As Range
+    Dim r As Range
+    Set r = ResolveSheetNamedRange(NR_RIGHT_OUTPUT)
+    If r Is Nothing Then Set r = Me.Range(Me.Cells(ROW_START, RIGHT_COL_START), Me.Cells(ROW_END, RIGHT_COL_END))
+    Set RightOutputRange = r
+End Function
+
+Private Function LayoutRowStart() As Long
+    Dim l As Range, r As Range
+    Set l = LeftInputRange()
+    Set r = RightOutputRange()
+    LayoutRowStart = Application.Min(l.row, r.row)
+End Function
+
+Private Function LayoutRowEnd() As Long
+    Dim l As Range, r As Range
+    Set l = LeftInputRange()
+    Set r = RightOutputRange()
+    LayoutRowEnd = Application.Max(l.row + l.Rows.Count - 1, r.row + r.Rows.Count - 1)
+End Function
+
+Private Function LayoutLeftCol() As Long
+    LayoutLeftCol = LeftInputRange().Column
+End Function
+
+Private Function LayoutRightColStart() As Long
+    LayoutRightColStart = RightOutputRange().Column
+End Function
+
+Private Function LayoutRightColEnd() As Long
+    LayoutRightColEnd = RightOutputRange().Column + RightOutputRange().Columns.Count - 1
+End Function
+
 Private Sub ComboBox1_Change()
 
 End Sub
@@ -75,7 +126,7 @@ Private Sub Worksheet_Change(ByVal Target As Range)
     For Each ar In Target.Areas
     For Each c In ar.Cells
         ' 行範囲外はスキップ
-        If c.row >= ROW_START And c.row <= ROW_END Then
+        If c.row >= LayoutRowStart() And c.row <= LayoutRowEnd() Then
             ' 結合セルは先頭セルだけ処理
             If c.MergeCells Then
                 Set tl = c.MergeArea.Cells(1, 1)
@@ -119,13 +170,13 @@ Private Function RouteOneCell(ByVal c As Range, ByVal map34 As Object, ByVal map
     tlRow = tl.row: tlCol = tl.Column
     Debug.Print "[Cell] ", tl.Address, " row=", tlRow, " col=", tlCol
 
-    If tlRow < ROW_START Or tlRow > ROW_END Then
+    If tlRow < LayoutRowStart() Or tlRow > LayoutRowEnd() Then
         Debug.Print "  [SKIP] row out"
         RouteOneCell = False: Exit Function
     End If
 
     '==== 左（列4）→右 ====
-    If tlCol = LEFT_COL Then
+    If tlCol = LayoutLeftCol() Then
         Dim topRowL As Long: topRowL = PairTopRow(tlRow)
         If tlRow <> topRowL Then
             Debug.Print "  [SKIP L] lower row edited (pairTop=" & topRowL & ")"
@@ -134,7 +185,7 @@ Private Function RouteOneCell(ByVal c As Range, ByVal map34 As Object, ByVal map
 
         Dim inValL As String, outVal As String, matchedKey As String
         Dim score As Long
-        inValL = NormalizeForMatch(CStr(Me.Cells(topRowL, LEFT_COL).Value) & CStr(Me.Cells(topRowL + 1, LEFT_COL).Value))
+        inValL = NormalizeForMatch(CStr(Me.Cells(topRowL, LayoutLeftCol()).Value) & CStr(Me.Cells(topRowL + 1, LayoutLeftCol()).Value))
         Debug.Print "  [L->R] inNorm=[", inValL, "]"
 
         If Len(inValL) = 0 Then
@@ -158,7 +209,7 @@ Private Function RouteOneCell(ByVal c As Range, ByVal map34 As Object, ByVal map
     End If
 
     '==== 右（列7～10）→左 ====
-    If tlCol >= RIGHT_COL_START And tlCol <= RIGHT_COL_END Then
+    If tlCol >= LayoutRightColStart() And tlCol <= LayoutRightColEnd() Then
         Dim topRowR As Long: topRowR = PairTopRow(tlRow)
         If tlRow <> topRowR Then
             Debug.Print "  [SKIP R] lower row edited (pairTop=" & topRowR & ")"
@@ -166,7 +217,7 @@ Private Function RouteOneCell(ByVal c As Range, ByVal map34 As Object, ByVal map
         End If
 
         Dim rightTop As Range
-        Set rightTop = GetRowMergeTopLeft(Me, topRowR, RIGHT_COL_START, RIGHT_COL_END)
+        Set rightTop = GetRowMergeTopLeft(Me, topRowR, LayoutRightColStart(), LayoutRightColEnd())
 
         Dim inValR As String, outVal2 As String, matchedKey2 As String
         Dim score2 As Long
@@ -691,12 +742,12 @@ Private Sub ApplyDecorations(ByVal topRow As Long, ByVal matchedKeyRaw As String
     On Error GoTo EH
 
     Dim belowRow As Long: belowRow = topRow + 1
-    If belowRow > ROW_END Then Exit Sub
+    If belowRow > LayoutRowEnd() Then Exit Sub
 
     ' 判定に使う生値（右:上段先頭セル / 左:上段+下段の連結）
     Dim rightTop As String, leftPair As String
-    rightTop = CStr(GetRowMergeTopLeft(Me, topRow, RIGHT_COL_START, RIGHT_COL_END).Value)
-    leftPair = CStr(Me.Cells(topRow, LEFT_COL).Value) & CStr(Me.Cells(belowRow, LEFT_COL).Value)
+    rightTop = CStr(GetRowMergeTopLeft(Me, topRow, LayoutRightColStart(), LayoutRightColEnd()).Value)
+    leftPair = CStr(Me.Cells(topRow, LayoutLeftCol()).Value) & CStr(Me.Cells(belowRow, LayoutLeftCol()).Value)
 
     ' マッチ用の正規化文字列（キー＋右上段＋左2行）
     Dim srcNorm As String
@@ -711,7 +762,7 @@ Private Sub ApplyDecorations(ByVal topRow As Long, ByVal matchedKeyRaw As String
 
     ' 出力先：右側結合ブロックの「下段」の結合先頭セル
     Dim cell As Range
-    Set cell = GetRowMergeTopLeft(Me, belowRow, RIGHT_COL_START, RIGHT_COL_END)
+    Set cell = GetRowMergeTopLeft(Me, belowRow, LayoutRightColStart(), LayoutRightColEnd())
     If cell Is Nothing Then Exit Sub
 
     ' ルール読み込み
@@ -828,13 +879,13 @@ End Sub
 
 '======================== ユーティリティ ========================
 Private Function PairTopRow(ByVal anyRow As Long) As Long
-    If anyRow Mod 2 = 0 Then PairTopRow = anyRow Else PairTopRow = anyRow - 1
+    PairTopRow = LayoutRowStart() + ((anyRow - LayoutRowStart()) \ 2) * 2
 End Function
 
 Private Sub WriteRight(ByVal topRow As Long, ByVal valueToWrite As String)
     On Error GoTo WR_E
     Dim tgt As Range
-    Set tgt = Me.Range(Me.Cells(topRow, RIGHT_COL_START), Me.Cells(topRow, RIGHT_COL_END)).MergeArea.Cells(1, 1)
+    Set tgt = Me.Range(Me.Cells(topRow, LayoutRightColStart()), Me.Cells(topRow, LayoutRightColEnd())).MergeArea.Cells(1, 1)
     tgt.Value = valueToWrite
     Debug.Print "[WRITE-R] row=", topRow, " val=[", valueToWrite, "]"
     Exit Sub
@@ -852,8 +903,8 @@ Private Sub WriteLeftSplit(ByVal topRow As Long, ByVal valueToWrite As String)
         upper2 = Left$(digits, WorksheetFunction.Min(2, Len(digits)))
         lower3 = Right$(digits, WorksheetFunction.Min(3, Len(digits)))
     End If
-    Me.Cells(topRow, LEFT_COL).Value = upper2
-    If topRow + 1 <= ROW_END Then Me.Cells(topRow + 1, LEFT_COL).Value = lower3
+    Me.Cells(topRow, LayoutLeftCol()).Value = upper2
+    If topRow + 1 <= LayoutRowEnd() Then Me.Cells(topRow + 1, LayoutLeftCol()).Value = lower3
     Debug.Print "[WRITE-L] row=", topRow, " up=[", upper2, "] low=[", lower3, "] src=[", valueToWrite, "]"
     Exit Sub
 WL_E:
@@ -861,8 +912,8 @@ WL_E:
 End Sub
 
 Private Sub WriteLeftFallback(ByVal topRow As Long)
-    Me.Cells(topRow, LEFT_COL).Value = UNMATCHED_LEFT_UPPER
-    If topRow + 1 <= ROW_END Then Me.Cells(topRow + 1, LEFT_COL).Value = UNMATCHED_LEFT_LOWER
+    Me.Cells(topRow, LayoutLeftCol()).Value = UNMATCHED_LEFT_UPPER
+    If topRow + 1 <= LayoutRowEnd() Then Me.Cells(topRow + 1, LayoutLeftCol()).Value = UNMATCHED_LEFT_LOWER
     Debug.Print "[WRITE-L] Fallback @row ", topRow
 End Sub
 
@@ -914,8 +965,8 @@ Public Sub TraceDecorAtRow(ByVal topRow As Long)
     Dim rules As Collection, rule As Object, p As Variant
     Dim ok As Boolean, mt As String, opts As String, pats As Variant, patList As String
 
-    rightTop = CStr(GetRowMergeTopLeft(Me, topRow, RIGHT_COL_START, RIGHT_COL_END).Value)
-    leftPair = CStr(Me.Cells(topRow, LEFT_COL).Value) & CStr(Me.Cells(belowRow, LEFT_COL).Value)
+    rightTop = CStr(GetRowMergeTopLeft(Me, topRow, LayoutRightColStart(), LayoutRightColEnd()).Value)
+    leftPair = CStr(Me.Cells(topRow, LayoutLeftCol()).Value) & CStr(Me.Cells(belowRow, LayoutLeftCol()).Value)
     srcNorm = NormalizeForMatch(rightTop & " " & leftPair)
     Set rules = BuildDecorRules()
 
@@ -932,4 +983,3 @@ Public Sub TraceDecorAtRow(ByVal topRow As Long)
     Next rule
     Debug.Print "----------------------------------------"
 End Sub
-
