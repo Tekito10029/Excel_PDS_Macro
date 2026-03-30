@@ -187,10 +187,13 @@ Public Sub 原紙から新規ブック作成()
         MsgBox "K3 に有効な日付が入っていないため採番できません。", vbExclamation
         Exit Sub
     End If
-
-    k3Date = CDate(K3DateCell(targetWs).Value)
-
-    l1Value = GetNextOrderNoFromLedger(k3Date)
+    
+    Dim issueBaseDate As Date
+    
+    k3Date = CDate(targetWs.Range("K3").Value)
+    issueBaseDate = GetIssueBaseDateByOption(targetWs, k3Date)
+    
+    l1Value = GetNextOrderNoFromLedger(issueBaseDate)
 
     If Len(l1Value) = 0 Then
         MsgBox "次の番号を採番できませんでした。", vbExclamation
@@ -862,6 +865,14 @@ Private Function GetMaxOrderNoByPrefix(ByVal ws As Worksheet, ByVal targetPrefix
             End If
         End If
     Next r
+End Function
+
+Private Function GetIssueBaseDateByOption(ByVal ws As Worksheet, ByVal srcDate As Date) As Date
+    If IsChecked(ws.Range("Z5").Value) Then
+        GetIssueBaseDateByOption = DateSerial(Year(srcDate), Month(srcDate) + 1, 1)
+    Else
+        GetIssueBaseDateByOption = srcDate
+    End If
 End Function
 
 Private Function GetLastUsedRowInColumnA(ByVal ws As Worksheet) As Long
