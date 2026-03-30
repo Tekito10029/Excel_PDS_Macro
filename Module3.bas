@@ -818,12 +818,15 @@ Private Function GetNextOrderNoFromLedger(ByVal baseDate As Date) As String
     End If
 
     Set ws = wb.Worksheets(sheetName)
-
+    
+    Dim maxNo As String
+    
     lastRow = GetLastUsedRowInColumnA(ws)
-    lastNo = GetLastOrderNoFromColumnA(ws, lastRow)
     currentPrefix = Format$(baseDate, "yymm")
-
-    nextNo = BuildNextOrderNo(lastNo, currentPrefix)
+    
+    maxNo = GetMaxOrderNoByPrefix(ws, currentPrefix, lastRow)
+    nextNo = BuildNextOrderNo(maxNo, currentPrefix)
+    
     GetNextOrderNoFromLedger = nextNo
 
     If Not alreadyOpen Then
@@ -836,6 +839,29 @@ EH:
     MsgBox "ŽŸ”Ô†‚ÌÌ”Ô’†‚ÉƒGƒ‰[‚ª”­¶‚µ‚Ü‚µ‚½B" & vbCrLf & _
            "No: " & Err.Number & vbCrLf & _
            Err.Description, vbExclamation
+End Function
+
+Private Function GetMaxOrderNoByPrefix(ByVal ws As Worksheet, ByVal targetPrefix As String, ByVal lastRow As Long) As String
+    Dim r As Long
+    Dim v As String
+    Dim maxSeq As Long
+    Dim seq As Long
+
+    maxSeq = 0
+
+    For r = 2 To lastRow
+        v = NormalizeOrderNo(ws.Cells(r, "A").Value)
+
+        If IsValidOrderNo(v) Then
+            If Left$(v, 4) = targetPrefix Then
+                seq = CLng(Right$(v, 5))
+                If seq > maxSeq Then
+                    maxSeq = seq
+                    GetMaxOrderNoByPrefix = v
+                End If
+            End If
+        End If
+    Next r
 End Function
 
 Private Function GetLastUsedRowInColumnA(ByVal ws As Worksheet) As Long
