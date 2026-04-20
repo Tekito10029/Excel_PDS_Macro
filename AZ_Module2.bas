@@ -37,14 +37,50 @@ Private Const LOCAL_MIRROR_ENABLED As Boolean = True   ' 同じシートにも出すなら 
 Private Const LOCAL_MIRROR_BASE_ROW As Long = 30       ' ミラー開始の基準行（ここから行数ぶん下へ）
 Private Const LOCAL_MIRROR_WRITE_LABELS As Boolean = False ' セル追記もするなら True
 ' === 同一シート 固定帯ミラー（6～19 → 30～43） ===
-Private Const FIXMIR_SRC_ROW_START As Long = 6
-Private Const FIXMIR_SRC_ROW_END   As Long = 19
-Private Const FIXMIR_DST_ROW_START As Long = 30
-Private Const FIXMIR_DST_ROW_END   As Long = 43
+Private Const FIXMIR_SRC_ROW_START As Long = 7
+Private Const FIXMIR_SRC_ROW_END   As Long = 18
+Private Const FIXMIR_DST_ROW_START As Long = 35
+Private Const FIXMIR_DST_ROW_END   As Long = 46
 Private Const FIXMIR_ROW_OFFSET    As Long = (FIXMIR_DST_ROW_START - FIXMIR_SRC_ROW_START)
 Private Const FIXMIR_ENABLED       As Boolean = True          ' ← 有効/無効
 Private Const FIXMIR_WRITE_LABELS  As Boolean = False         ' ← ミラー先にセル追記もするなら True
 
+' === レイアウト可変対応（名前付き範囲優先 / 固定番地フォールバック） ===
+Private Const TARGET_CELL_NAMED As String = "LabelTargetCell"
+Private Const FIXMIR_SRC_NAMED As String = "MirrorSrcBand"
+Private Const FIXMIR_DST_NAMED As String = "MirrorDstBand"
+
+Private Function ResolveNamedRangeLocal(ByVal ws As Worksheet, ByVal nm As String) As Range
+    On Error Resume Next
+    Set ResolveNamedRangeLocal = ws.Range(nm)
+    If ResolveNamedRangeLocal Is Nothing Then Set ResolveNamedRangeLocal = ThisWorkbook.Names(nm).RefersToRange
+    On Error GoTo 0
+End Function
+
+Private Function ResolveTargetFallbackCell(ByVal ws As Worksheet) As Range
+    Dim r As Range
+    Set r = ResolveNamedRangeLocal(ws, TARGET_CELL_NAMED)
+    If r Is Nothing Then
+        On Error Resume Next
+        Set r = ResolveTargetFallbackCell(ws)
+        On Error GoTo 0
+    End If
+    If Not r Is Nothing Then Set ResolveTargetFallbackCell = r.Cells(1, 1)
+End Function
+
+Private Function FixedMirrorSourceBand(ByVal ws As Worksheet) As Range
+    Dim r As Range
+    Set r = ResolveNamedRangeLocal(ws, FIXMIR_SRC_NAMED)
+    If r Is Nothing Then Set r = ws.Range(ws.Cells(FIXMIR_SRC_ROW_START, 1), ws.Cells(FIXMIR_SRC_ROW_END, ws.Columns.Count))
+    Set FixedMirrorSourceBand = r
+End Function
+
+Private Function FixedMirrorDestBand(ByVal ws As Worksheet) As Range
+    Dim r As Range
+    Set r = ResolveNamedRangeLocal(ws, FIXMIR_DST_NAMED)
+    If r Is Nothing Then Set r = ws.Range(ws.Cells(FIXMIR_DST_ROW_START, 1), ws.Cells(FIXMIR_DST_ROW_END, ws.Columns.Count))
+    Set FixedMirrorDestBand = r
+End Function
 '========================
 ' 入力マクロ（任意ラベル）
 '========================
@@ -357,7 +393,7 @@ Private Function ResolveTargetCell(ByVal ws As Worksheet, ByVal rng As Range) As
             Set tgt = TryGetNamedRange(ws, TARGET_NAMED_RANGE)
             If tgt Is Nothing Then
                 On Error Resume Next
-                Set tgt = ws.Range(TARGET_CELL_ADDR)
+                Set tgt = ResolveTargetFallbackCell(ws)
                 On Error GoTo 0
             End If
 
@@ -522,7 +558,7 @@ Private Sub SetTargetToTEXTdd(ByVal ws As Worksheet, ByVal rng As Range)
         Exit Sub
     End If
 
-    tgt.FormulaLocal = "=TEXT(K4,""d"")&IF(ISNUMBER(SEARCH(""TRUE"",Z6)),""-別口"","""")"
+    tgt.FormulaLocal = "=TEXT(J5,""d"")&IF(ISNUMBER(SEARCH(""TRUE"",Z6)),""-別口"","""")"
 End Sub
 
 '========================
@@ -824,22 +860,28 @@ End Function
 ' 6～19 に重なる部分を +24 行して 30～43 に収めた矩形を返す（列はそのまま）
 Private Function MapBand6_19_To30_43(ByVal src As Range) As Range
     Dim cut As Range, ws As Worksheet
+    Dim srcBand As Range, dstBand As Range
     Dim r1 As Long, r2 As Long, c1 As Long, c2 As Long
-    
+    Dim rowOffset As Long
+
     Set ws = src.Worksheet
-    Set cut = OverlapWithFixedBand(src, FIXMIR_SRC_ROW_START, FIXMIR_SRC_ROW_END)
-    If cut Is Nothing Then Exit Function  ' 6～19 にかかっていない
-    
-    ' 元の列幅と重なり行数をそのまま、行だけ +24 → 30～43 にクリップ
+    Set srcBand = FixedMirrorSourceBand(ws)
+    Set dstBand = FixedMirrorDestBand(ws)
+
+    Set cut = Intersect(src, srcBand)
+    If cut Is Nothing Then Exit Function
+
     c1 = cut.Columns(1).Column
     c2 = cut.Columns(cut.Columns.Count).Column
-    r1 = cut.row + FIXMIR_ROW_OFFSET
+    rowOffset = dstBand.row - srcBand.row
+
+    r1 = cut.row + rowOffset
     r2 = r1 + cut.Rows.Count - 1
-    
-    If r1 < FIXMIR_DST_ROW_START Then r1 = FIXMIR_DST_ROW_START
-    If r2 > FIXMIR_DST_ROW_END Then r2 = FIXMIR_DST_ROW_END
-    If r2 < r1 Then Exit Function         ' クリップで消滅
-    
+
+    If r1 < dstBand.row Then r1 = dstBand.row
+    If r2 > dstBand.row + dstBand.Rows.Count - 1 Then r2 = dstBand.row + dstBand.Rows.Count - 1
+    If r2 < r1 Then Exit Function
+
     Set MapBand6_19_To30_43 = ws.Range(ws.Cells(r1, c1), ws.Cells(r2, c2))
 End Function
 
@@ -870,7 +912,7 @@ Private Function GetTargetCells(ByVal ws As Worksheet) As Range
 
     ' 3) 固定セル（同じシート上）
     On Error Resume Next
-    Set r = ws.Range(TARGET_CELL_ADDR)
+    Set r = ResolveTargetFallbackCell(ws)
     On Error GoTo 0
     If Not r Is Nothing Then
         If u Is Nothing Then
