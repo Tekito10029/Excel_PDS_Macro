@@ -732,9 +732,13 @@ End Sub
 
 Private Function GetNextLedgerRow(ByVal ws As Worksheet, ByVal newOrderNo As String) As Long
     Dim lastRow As Long
+    Dim r As Long
+    Dim insertRow As Long
+    Dim newPrefix As String
+    Dim v As String
+    Dim prefix As String
     Dim prevOrderNo As String
     Dim prevPrefix As String
-    Dim newPrefix As String
 
     lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).row
 
@@ -743,10 +747,58 @@ Private Function GetNextLedgerRow(ByVal ws As Worksheet, ByVal newOrderNo As Str
         Exit Function
     End If
 
-    prevOrderNo = GetLastOrderNoFromColumnA(ws, lastRow)
-    newPrefix = Left$(NormalizeOrderNo(newOrderNo), 4)
+    newOrderNo = NormalizeOrderNo(newOrderNo)
+    If Not IsValidOrderNo(newOrderNo) Then
+        GetNextLedgerRow = lastRow + 1
+        Exit Function
+    End If
 
-    If IsValidOrderNo(prevOrderNo) And IsValidOrderNo(newOrderNo) Then
+    newPrefix = Left$(newOrderNo, 4)
+
+    '既に来月以降の番号が台帳内にある場合は、
+    '表の最終行ではなく「同じ年月ブロックの末尾」に差し込む。
+    '
+    '例:
+    '  260400401
+    '  （空行）
+    '  260500401
+    '
+    'ここへ 260400402 を追加する場合は、260500401 の前に差し込む。
+    For r = 2 To lastRow
+        v = NormalizeOrderNo(ws.Cells(r, "A").Value)
+
+        If IsValidOrderNo(v) Then
+            prefix = Left$(v, 4)
+
+            If prefix = newPrefix Then
+                insertRow = r + 1
+
+            ElseIf CLng(prefix) > CLng(newPrefix) Then
+                If insertRow = 0 Then insertRow = r
+                Exit For
+            End If
+        End If
+    Next r
+
+    If insertRow > 0 And insertRow <= lastRow Then
+        If IsValidOrderNo(NormalizeOrderNo(ws.Cells(insertRow, "A").Value)) Then
+            '差し込み先がすでに次月以降の番号行の場合は、
+            '新規行＋月区切り用の空行を作ってから書き込む。
+            ws.Rows(insertRow).Insert Shift:=xlDown
+            ws.Rows(insertRow + 1).Insert Shift:=xlDown
+        Else
+            '差し込み先が既存の空行の場合は、空行を残すために1行挿入する。
+            ws.Rows(insertRow).Insert Shift:=xlDown
+        End If
+
+        GetNextLedgerRow = insertRow
+        Exit Function
+    End If
+
+    'まだ来月以降の番号がない場合は従来通り末尾に追加する。
+    prevOrderNo = GetLastOrderNoFromColumnA(ws, lastRow)
+
+    If IsValidOrderNo(prevOrderNo) Then
         prevPrefix = Left$(prevOrderNo, 4)
 
         If prevPrefix <> newPrefix Then
