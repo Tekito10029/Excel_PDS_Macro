@@ -619,6 +619,31 @@ Private Function PickLedgerBookPath() As String
     End With
 End Function
 
+Private Function PromptLedgerBText(ByRef outText As String) As Boolean
+    Dim v As Variant
+
+    v = Application.InputBox( _
+        Prompt:="台帳のB列に追記する文字を入力してください。" & vbCrLf & _
+                "不要な場合は空欄のままOKを押してください。", _
+        Title:="台帳B列 追記文字", _
+        Type:=2)
+
+    If VarType(v) = vbBoolean Then
+        If v = False Then
+            PromptLedgerBText = (MsgBox( _
+                "B列は空欄のまま台帳へ追記しますか？" & vbCrLf & _
+                "「いいえ」を選ぶと台帳追記を中止します。", _
+                vbQuestion + vbYesNo + vbDefaultButton1, _
+                "台帳B列の確認") = vbYes)
+            outText = ""
+            Exit Function
+        End If
+    End If
+
+    outText = Trim$(CStr(v))
+    PromptLedgerBText = True
+End Function
+
 Private Sub AppendToLedger(ByVal orderNo As String, ByVal companyName As String)
     On Error GoTo EH
 
@@ -632,6 +657,7 @@ Private Sub AppendToLedger(ByVal orderNo As String, ByVal companyName As String)
     Dim sheetName As String
     Dim tmpWb As Workbook
     Dim pickedPath As String
+    Dim ledgerMemo As String
 
     If Len(Trim$(orderNo)) = 0 Then Exit Sub
     If Len(Trim$(companyName)) = 0 Then Exit Sub
@@ -708,10 +734,16 @@ Private Sub AppendToLedger(ByVal orderNo As String, ByVal companyName As String)
         End If
     Next r
     
+    If Not PromptLedgerBText(ledgerMemo) Then
+        If Not alreadyOpen Then wb.Close SaveChanges:=False
+        Exit Sub
+    End If
+
     nextRow = GetNextLedgerRow(ws, orderNo)
     If nextRow < 2 Then nextRow = 2
     
     ws.Cells(nextRow, "A").Value = orderNo
+    ws.Cells(nextRow, "B").Value = ledgerMemo
     ws.Cells(nextRow, "C").Value = companyName
 
     wb.Save
