@@ -2,7 +2,7 @@ Attribute VB_Name = "Module3"
 'V_1.5 原紙を一本化 製造番号を自動採番し製造番号ブックに自動入力
 Option Explicit
 
-Private Const ORIGINAL_BOOK_NAME As String = "☆沓用AZ製造表_原紙.xlsm"
+Private Const ORIGINAL_BOOK_NAME As String = "☆AZ_沓用製造表_原紙自動入力.xlsm"
 Private Const COMPANY_MASTER_SHEET As String = "会社設定"
 Private Const COMPANY_NAME_CELL As String = "C3"
 
@@ -59,27 +59,27 @@ Private Function CompanyNameCell(ByVal ws As Worksheet) As Range
 End Function
 
 Private Function K3DateCell(ByVal ws As Worksheet) As Range
-    Set K3DateCell = ResolveLayoutCell(ws, NR_K3_DATE, "H5")
+    Set K3DateCell = ResolveLayoutCell(ws, NR_K3_DATE, "K3")
 End Function
 
 Private Function L1OrderNoCell(ByVal ws As Worksheet) As Range
-    Set L1OrderNoCell = ResolveLayoutCell(ws, NR_L1_ORDERNO, "H2")
+    Set L1OrderNoCell = ResolveLayoutCell(ws, NR_L1_ORDERNO, "L1")
 End Function
 
 Private Function DetailBlockRange(ByVal ws As Worksheet) As Range
-    Set DetailBlockRange = ResolveLayoutRange(ws, NR_DETAIL_BLOCK, "D7:H18")
+    Set DetailBlockRange = ResolveLayoutRange(ws, NR_DETAIL_BLOCK, "D6:L19")
 End Function
 
 Private Function ProjectNameCell(ByVal ws As Worksheet) As Range
-    Set ProjectNameCell = ResolveLayoutCell(ws, NR_PROJECT_NAME, "C19")
+    Set ProjectNameCell = ResolveLayoutCell(ws, NR_PROJECT_NAME, "C20")
 End Function
 
 Private Function DeliveryNoteCell(ByVal ws As Worksheet) As Range
-    Set DeliveryNoteCell = ResolveLayoutCell(ws, NR_DELIVERY_NOTE, "E21")
+    Set DeliveryNoteCell = ResolveLayoutCell(ws, NR_DELIVERY_NOTE, "F21")
 End Function
 
 Private Function DateBlockRange(ByVal ws As Worksheet) As Range
-    Set DateBlockRange = ResolveLayoutRange(ws, NR_DATE_BLOCK, "H3:J5")
+    Set DateBlockRange = ResolveLayoutRange(ws, NR_DATE_BLOCK, "K3:K4")
 End Function
 
 Private Function InitCheckCell(ByVal ws As Worksheet, ByVal indexNo As Long) As Range
@@ -179,18 +179,18 @@ Public Sub 原紙から新規ブック作成()
     C3Value = NormalizeFileName(C3Value)
 
     If Len(C3Value) = 0 Then
-        MsgBox "C4 の値がファイル名に使用できません。", vbExclamation
+        MsgBox "C3 の値がファイル名に使用できません。", vbExclamation
         Exit Sub
     End If
 
     If Not IsDate(K3DateCell(targetWs).Value) Then
-        MsgBox "H5 に有効な日付が入っていないため採番できません。", vbExclamation
+        MsgBox "K3 に有効な日付が入っていないため採番できません。", vbExclamation
         Exit Sub
     End If
     
     Dim issueBaseDate As Date
     
-    k3Date = CDate(targetWs.Range("H5").Value)
+    k3Date = CDate(targetWs.Range("K3").Value)
     issueBaseDate = GetIssueBaseDateByOption(targetWs, k3Date)
     
     l1Value = GetNextOrderNoFromLedger(issueBaseDate)
@@ -463,19 +463,19 @@ Private Function GetInitTargetSummary(ByVal ws As Worksheet) As String
     lines = ""
 
     If InitCheckValue(ws, 1) Then
-        lines = lines & "・製造票番号（H2）" & vbCrLf
+        lines = lines & "・製造票番号（L1）" & vbCrLf
     End If
 
     If InitCheckValue(ws, 2) Then
-        lines = lines & "・品名・サイズ・員数・単価（D7:H18）" & vbCrLf
+        lines = lines & "・品名・サイズ・員数・単価（D6:L19）" & vbCrLf
     End If
 
     If InitCheckValue(ws, 3) Then
-        lines = lines & "・物件名・備考欄（C19:F20）" & vbCrLf
+        lines = lines & "・物件名・備考欄（C20:F21）" & vbCrLf
     End If
 
     If InitCheckValue(ws, 4) Then
-        lines = lines & "・入荷日付・納期（H5:J5）" & vbCrLf
+        lines = lines & "・入荷日付・納期（K3:K4）" & vbCrLf
     End If
 
     If Len(lines) = 0 Then

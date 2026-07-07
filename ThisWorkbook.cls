@@ -63,7 +63,7 @@ Private Function IsOriginalTemplateBook() As Boolean
 
     Select Case LCase$(ThisWorkbook.Name)
         Case LCase$("☆沓用製造表_原紙自動入力.xlsm"), _
-             LCase$("☆沓用AZ製造表_原紙.xlsm")
+             LCase$("☆AZ_沓用製造表_原紙自動入力.xlsm")
             IsOriginalTemplateBook = True
     End Select
 
